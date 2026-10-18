@@ -1,0 +1,25 @@
+{% load core_tags %}
+{# 投稿フォーム。fid はページ内で重複しないようにするための接頭辞 #}
+<form class="js-compose" action="{% url 'core:create_tweet' %}" enctype="multipart/form-data" novalidate>
+  <div class="flex gap-3">
+    {% include "core/_avatar.html" with url=x_account.profile_image_url size="size-11" %}
+    <div class="min-w-0 flex-1">
+      {# 下線 (ボーダー) は外側の枠に付け、本文欄と添付画像のプレビューをその上に並べる #}
+      <div class="js-compose-box border-b border-slate-400 transition-colors focus-within:border-slate-500 has-[[aria-invalid=true]]:border-red-500">
+        <label for="text-{{ fid }}" class="sr-only">ツイート本文</label>
+        <textarea id="text-{{ fid }}" name="text" rows="2" placeholder="なにしてる？" maxlength="{{ tweet_max_length }}"
+                  class="js-compose-text block max-h-[50vh] w-full resize-none overflow-hidden border-0 bg-transparent px-0 pb-1 pt-2 text-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-0"></textarea>
+        <ul class="js-previews js-gallery flex flex-wrap gap-2 pb-3 pt-2 empty:hidden" aria-label="添付する画像"></ul>
+      </div>
+      <div class="mt-2 flex items-center">
+        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple class="js-compose-file sr-only" id="file-{{ fid }}">
+        <label for="file-{{ fid }}" class="js-add-image cursor-pointer rounded-full p-1.5 text-slate-500 transition hover:bg-slate-200 focus-within:outline-2" title="画像を添付 (4枚まで)">
+          {% icon "image" "size-6" %}<span class="sr-only">画像を添付</span>
+        </label>
+        <span class="js-count ml-auto mr-3 text-sm text-slate-500" aria-live="polite">0/{{ tweet_max_length }}</span>
+        <button type="submit" class="btn-primary js-compose-submit">{% icon "send" "size-5" %}ツイート</button>
+      </div>
+      <p class="js-form-error mt-2 hidden text-sm text-red-600" role="alert"></p>
+    </div>
+  </div>
+</form>

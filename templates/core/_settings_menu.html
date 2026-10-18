@@ -1,0 +1,39 @@
+{% load core_tags %}
+<div id="settings-menu" hidden class="absolute bottom-full left-0 z-30 mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+  <p class="px-2 pb-2 text-xs font-semibold text-slate-500">連携中のXアカウント</p>
+  <ul class="space-y-1">
+    {% for acc in x_accounts %}
+      <li class="flex items-center gap-2 rounded-lg px-2 py-1.5 {% if acc.is_active %}bg-slate-100{% endif %}">
+        {% include "core/_avatar.html" with url=acc.profile_image_url size="size-8" %}
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-medium text-slate-700">{{ acc.name }}</p>
+          <p class="truncate text-xs text-slate-500">@{{ acc.username }}</p>
+        </div>
+        {% if acc.is_active %}
+          <span class="flex items-center gap-1 text-xs text-slate-600">{% icon "check" "size-4" %}使用中</span>
+        {% else %}
+          <form method="post" action="{% url 'core:x_switch' acc.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" class="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-100">切り替え</button>
+          </form>
+        {% endif %}
+        <form method="post" action="{% url 'core:x_disconnect' acc.pk %}" data-confirm="@{{ acc.username }} の連携を削除します。保存しているツイートの記録も消えます (Xのツイート自体は消えません)。よろしいですか？">
+          {% csrf_token %}
+          <button type="submit" aria-label="@{{ acc.username }} の連携を削除" class="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600">{% icon "trash-2" "size-4" %}</button>
+        </form>
+      </li>
+    {% empty %}
+      <li class="px-2 py-1 text-sm text-slate-500">連携しているアカウントはありません</li>
+    {% endfor %}
+  </ul>
+  {% if x_configured %}
+    <a href="{% url 'core:x_connect' %}" class="mt-2 flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-slate-100">{% icon "plus" "size-4" %}Xアカウントを追加</a>
+  {% else %}
+    <p class="mt-2 px-2 text-xs text-amber-700">.env に X_CLIENT_ID / X_CLIENT_SECRET が未設定です</p>
+  {% endif %}
+  <form method="post" action="{% url 'accounts:logout' %}" class="mt-2 border-t border-slate-200 pt-2">
+    {% csrf_token %}
+    <button type="submit" class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-slate-100">{% icon "log-out" "size-4" %}ログアウト</button>
+  </form>
+</div>

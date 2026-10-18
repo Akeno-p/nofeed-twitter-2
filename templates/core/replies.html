@@ -1,0 +1,13 @@
+{% extends "app.html" %}
+{% load core_tags %}
+{% block title %}リプライ - nofeed-twitter{% endblock %}
+{% block heading %}リプライ{% endblock %}
+{% block header_action %}
+  <button type="button" class="btn-pill js-sync" data-confirm="#sync-confirm-dialog" data-url="{% url 'core:sync_replies' %}" data-target="#reply-list">
+    {% icon "list-end" "size-5" %}<span class="js-sync-label">リプライ取得</span>
+  </button>
+  {% include "core/_sync_confirm.html" with title="新しいリプライを取得しますか？" %}
+{% endblock %}
+{% block content %}
+  <div id="reply-list">{% include "core/_reply_list.html" %}</div>
+{% endblock %}

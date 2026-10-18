@@ -1,0 +1,17 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ja" class="{% block html_class %}{% endblock %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <title>{% block title %}nofeed-twitter{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-700 antialiased" {% block body_attrs %}{% endblock %}>
+  {% block body %}{% endblock %}
+  <script src="{% static 'vendor/jquery.min.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

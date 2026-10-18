@@ -1,0 +1,19 @@
+{% extends "app.html" %}
+{% load core_tags %}
+{% block title %}ツイート - nofeed-twitter{% endblock %}
+{% block heading %}ツイート{% endblock %}
+{% block header_action %}
+  <button type="button" class="btn-pill js-sync" data-confirm="#sync-confirm-dialog" data-url="{% url 'core:sync_tweets' %}" data-target="#tweet-list">
+    {% icon "list-end" "size-5" %}<span class="js-sync-label">ツイート取得</span>
+  </button>
+  {% include "core/_sync_confirm.html" with title="新しいツイートを取得しますか？" %}
+{% endblock %}
+{% block content %}
+  <section class="border-b border-slate-200 px-6 py-5" aria-label="ツイートを書く">
+    {% include "core/_compose.html" with fid="inline" %}
+  </section>
+  <div class="flex items-center justify-between border-b border-slate-200 px-6 py-3 text-sm text-slate-500">
+    <h2>自分のツイート</h2><span>新しい順</span>
+  </div>
+  <div id="tweet-list">{% include "core/_tweet_list.html" %}</div>
+{% endblock %}

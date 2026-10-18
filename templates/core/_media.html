@@ -1,0 +1,13 @@
+{% load core_tags %}
+{% if post.media_urls %}
+<ul class="js-gallery mt-2 grid max-w-[21rem] gap-1 overflow-hidden rounded-2xl {% if post.media_urls|length > 1 %}grid-cols-2{% endif %}">
+  {% for url in post.media_urls %}
+    <li>
+      <button type="button" class="js-zoom block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500" aria-label="画像 {{ forloop.counter }} を拡大">
+        <img src="{{ url }}" alt="添付画像 {{ forloop.counter }}" loading="lazy" referrerpolicy="no-referrer"
+             class="h-full w-full bg-slate-200 object-cover {% if post.media_urls|length == 1 %}max-h-[21rem]{% else %}aspect-square{% endif %}">
+      </button>
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}

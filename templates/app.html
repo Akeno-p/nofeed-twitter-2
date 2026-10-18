@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{# メイン画面は基準の文字サイズを1.2倍にする (rem 基準の文字・余白・ボタン・アイコンが比率を保ったまま拡大される) #}
+{% block html_class %}text-[120%]{% endblock %}
+{% block body_attrs %}data-link-price="{{ link_post_price }}" data-link-pattern="{{ link_pattern }}"{% endblock %}
+{% block body %}
+<div class="flex min-h-screen">
+  {# ---- サイドバー ---- #}
+  <aside class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200 px-4 py-5 md:flex lg:w-72">
+    <a href="{% url 'core:tweets' %}" class="px-1 text-2xl font-bold tracking-tight text-slate-700">nofeed-twitter</a>
+
+    <nav class="mt-8 space-y-2" aria-label="メイン">
+      <a href="{% url 'core:tweets' %}" {% if nav == "tweets" %}aria-current="page"{% endif %}
+         class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 transition {% if nav == 'tweets' %}bg-slate-200 font-medium{% else %}hover:bg-slate-200{% endif %}">
+        {% icon "house" "size-6" %}ツイート
+      </a>
+      <a href="{% url 'core:replies' %}" {% if nav == "replies" %}aria-current="page"{% endif %}
+         class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 transition {% if nav == 'replies' %}bg-slate-200 font-medium{% else %}hover:bg-slate-200{% endif %}">
+        {% icon "undo-2" "size-6" %}リプライ
+      </a>
+    </nav>
+
+    <button type="button" class="btn-primary mt-6 w-full" data-open-compose {% if not x_account %}disabled{% endif %}>
+      {% icon "send" "size-5" %}ツイート
+    </button>
+
+    <div class="relative mt-auto border-t border-slate-200 pt-4">
+      {% include "core/_settings_menu.html" %}
+      <div class="flex items-center gap-3">
+        {% if x_account %}
+          {% include "core/_avatar.html" with url=x_account.profile_image_url size="size-11" %}
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-semibold text-slate-700">{{ x_account.name }}</p>
+            <p class="truncate text-sm text-slate-500">@{{ x_account.username }}</p>
+          </div>
+        {% else %}
+          <p class="flex-1 text-sm text-slate-500">未連携</p>
+        {% endif %}
+        <button type="button" id="settings-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="settings-menu"
+                aria-label="設定" class="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+          {% icon "settings" "size-6" %}
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="min-w-0 flex-1">
+    {# ---- 狭い画面用の上部バー ---- #}
+    <nav class="flex items-center gap-1 border-b border-slate-200 px-3 py-2 md:hidden" aria-label="メイン">
+      <a href="{% url 'core:tweets' %}" class="rounded-lg px-3 py-2 text-sm {% if nav == 'tweets' %}bg-slate-200 font-medium{% endif %}">ツイート</a>
+      <a href="{% url 'core:replies' %}" class="rounded-lg px-3 py-2 text-sm {% if nav == 'replies' %}bg-slate-200 font-medium{% endif %}">リプライ</a>
+      <button type="button" class="ml-auto rounded-lg bg-slate-700 px-3 py-2 text-sm text-white disabled:opacity-50" data-open-compose {% if not x_account %}disabled{% endif %}>ツイート</button>
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
+        <button type="submit" class="rounded-lg p-2 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-5" %}</button>
+      </form>
+    </nav>
+
+    <main>
+      <header class="flex h-16 items-center justify-between border-b border-slate-200 px-6">
+        <h1 class="text-2xl font-bold text-slate-700">{% block heading %}{% endblock %}</h1>
+        {% block header_action %}{% endblock %}
+      </header>
+
+      {% if flash %}
+        <p role="status" class="flash mx-6 mt-4 rounded-lg bg-slate-200 px-4 py-2.5 text-sm text-slate-700">{{ flash }}</p>
+      {% endif %}
+      <p id="error-banner" role="alert" class="mx-6 mt-4 hidden items-start gap-2 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700"></p>
+
+      {% if not x_account %}
+        <section class="mx-auto mt-16 max-w-md px-6 text-center">
+          <h2 class="text-lg font-bold text-slate-700">Xアカウントを連携してください</h2>
+          {% if x_configured %}
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">ツイートの投稿やリプライの確認には、Xアカウントとの連携が必要です。</p>
+            <a href="{% url 'core:x_connect' %}" class="btn-primary mt-6">Xアカウントを連携する</a>
+          {% else %}
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+              <code class="rounded bg-slate-200 px-1">.env</code> に <code class="rounded bg-slate-200 px-1">X_CLIENT_ID</code> と
+              <code class="rounded bg-slate-200 px-1">X_CLIENT_SECRET</code> を設定し、サーバーを再起動してください。
+            </p>
+          {% endif %}
+        </section>
+      {% else %}
+        {% block content %}{% endblock %}
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+{# ---- 画像の拡大表示 (外側クリック・Esc・×で閉じる。複数枚なら矢印キーかボタンで切り替え) ---- #}
+<dialog id="lightbox" aria-label="画像の拡大表示"
+        class="m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-black/85 focus:outline-none">
+  <div class="js-lightbox-bg flex h-full w-full items-center justify-center p-4 sm:p-10">
+    <img id="lightbox-img" alt="" referrerpolicy="no-referrer"
+         class="max-h-full max-w-full rounded-lg object-contain shadow-2xl">
+  </div>
+  <button type="button" data-lightbox-close aria-label="閉じる"
+          class="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white transition hover:bg-black/70">{% icon "x" "size-6" %}</button>
+  <button type="button" id="lightbox-prev" aria-label="前の画像" hidden
+          class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition hover:bg-black/70">{% icon "chevron-left" "size-6" %}</button>
+  <button type="button" id="lightbox-next" aria-label="次の画像" hidden
+          class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition hover:bg-black/70">{% icon "chevron-right" "size-6" %}</button>
+  <p id="lightbox-count" aria-live="polite" hidden
+     class="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white"></p>
+</dialog>
+
+{# ---- 通知 (画面下の中央に、少しの間だけ出る) ---- #}
+<div class="pointer-events-none fixed inset-x-0 bottom-8 z-50 flex justify-center px-4">
+  <p id="toast" role="status" aria-live="polite" aria-atomic="true"
+     class="translate-y-3 rounded-full px-6 py-3 text-base font-bold text-white opacity-0 shadow-lg transition duration-200 motion-reduce:transition-none"></p>
+</div>
+
+{# ---- 元のツイート (リプライ画面の「◯◯に対しての返信」を押すと開く) ---- #}
+<dialog id="parent-dialog" aria-labelledby="parent-dialog-title"
+        class="m-auto max-h-[85vh] w-[min(92vw,34rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-0 text-slate-700 shadow-xl backdrop:bg-slate-900/40">
+  <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+    <h2 id="parent-dialog-title" class="font-bold">元のツイート</h2>
+    <button type="button" data-parent-close aria-label="閉じる" class="cursor-pointer rounded-full p-1.5 text-slate-500 hover:bg-slate-200">{% icon "x" "size-5" %}</button>
+  </div>
+  <div id="parent-dialog-body" class="px-5 py-4"></div>
+</dialog>
+
+{# ---- 投稿用モーダル ---- #}
+{% if x_account %}
+<dialog id="compose-dialog" aria-labelledby="compose-title" class="m-auto w-[min(92vw,36rem)] rounded-2xl border border-slate-200 bg-slate-50 p-0 shadow-xl backdrop:bg-slate-900/40">
+  <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+    <h2 id="compose-title" class="font-bold text-slate-700">ツイートする</h2>
+    <button type="button" data-close-compose aria-label="閉じる" class="rounded-full p-1.5 text-slate-500 hover:bg-slate-200">{% icon "x" "size-5" %}</button>
+  </div>
+  <div class="px-5 py-4">{% include "core/_compose.html" with fid="modal" %}</div>
+</dialog>
+{% endif %}
+{% endblock %}

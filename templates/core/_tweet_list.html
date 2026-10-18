@@ -1,0 +1,13 @@
+{% load core_tags %}
+{% for post in tweets %}
+  <article class="flex gap-3 border-b border-slate-200 px-6 py-4">
+    {% include "core/_avatar.html" with url=post.author_avatar size="size-11" %}
+    <div class="min-w-0 flex-1">
+      {% include "core/_post_header.html" %}
+      {% if post.text %}<p class="mt-0.5 whitespace-pre-wrap break-words text-slate-700">{{ post.text }}</p>{% endif %}
+      {% include "core/_media.html" %}
+    </div>
+  </article>
+{% empty %}
+  <p class="px-6 py-16 text-center text-sm text-slate-500">まだツイートがありません。「ツイート取得」でXから読み込めます。</p>
+{% endfor %}
