@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import dev_views, views
+from . import views
 
 app_name = "core"
 
@@ -15,8 +15,4 @@ urlpatterns = [
     path("x/callback/", views.x_callback, name="x_callback"),
     path("x/<int:pk>/switch/", views.x_switch, name="x_switch"),
     path("x/<int:pk>/disconnect/", views.x_disconnect, name="x_disconnect"),
-    # 開発用のデザイン確認ページ (DEBUG=False では 404)
-    path("dev/", dev_views.index, name="dev_index"),
-    path("dev/two-factor-setup/", dev_views.two_factor_setup, name="dev_two_factor_setup"),
-    path("dev/x-connect/", dev_views.x_connect, name="dev_x_connect"),
 ]
