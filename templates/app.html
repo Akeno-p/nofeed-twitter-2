@@ -49,8 +49,6 @@
         </ul>
         {% if x_configured %}
           <a href="{% url 'core:x_connect' %}" class="mt-2.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "plus" "size-5" %}Xアカウントを追加</a>
-        {% else %}
-          <p class="mt-2.5 px-2.5 text-sm text-amber-700">.env に X_CLIENT_ID / X_CLIENT_SECRET が未設定です</p>
         {% endif %}
         <div class="mt-2.5 border-t border-slate-200 pt-2.5">
           <button type="button" data-url="{% url 'accounts:logout' %}"
@@ -101,11 +99,6 @@
           {% if x_configured %}
             <p class="mt-2.5 text-base leading-relaxed text-slate-600">ツイートの投稿やリプライの確認には、Xアカウントとの連携が必要です。</p>
             <a href="{% url 'core:x_connect' %}" class="mt-7 inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700">Xアカウントを連携する</a>
-          {% else %}
-            <p class="mt-2.5 text-base leading-relaxed text-slate-600">
-              <code class="rounded bg-slate-200 px-1.5">.env</code> に <code class="rounded bg-slate-200 px-1.5">X_CLIENT_ID</code> と
-              <code class="rounded bg-slate-200 px-1.5">X_CLIENT_SECRET</code> を設定し、サーバーを再起動してください。
-            </p>
           {% endif %}
         </section>
       {% else %}
