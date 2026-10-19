@@ -187,12 +187,6 @@ $(function () {
   $(document).on("click", ".js-auth-submit", function () {
     submitAuth($(this).closest(".js-auth"));
   });
-  $(document).on("keydown", ".js-auth input", function (e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      submitAuth($(this).closest(".js-auth"));
-    }
-  });
 
   // ---- ログアウト ----
   $(document).on("click", ".js-logout", function () {
@@ -262,7 +256,7 @@ $(function () {
     if (e.target === dialog) dialog.close(); // 外側クリックで閉じる
   });
 
-  // ---- 文字数カウンタ (Enter+Ctrl/Cmd で送信) ----
+  // ---- 文字数カウンタ ----
   function updateCount($form) {
     const len = Array.from($form.find(".js-compose-text").val()).length;
     const max = Number($form.find(".js-compose-text").attr("maxlength"));
@@ -271,12 +265,6 @@ $(function () {
   $(document).on("input", ".js-compose-text", function () {
     updateCount($(this).closest(COMPOSE));
     if ($(this).attr("aria-invalid")) clearFormError($(this).closest(COMPOSE));
-  });
-  $(document).on("keydown", ".js-compose-text", function (e) {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      submitCompose($(this).closest(COMPOSE));
-    }
   });
 
   // ---- 画像の選択とプレビュー ----
