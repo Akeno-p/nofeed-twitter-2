@@ -163,6 +163,29 @@ class AuthFlowTests(TestCase):
         self.assertNotIn("_auth_user_id", self.client.session)
 
 
+class AdminAccessTests(TestCase):
+    """管理画面も、ログインと2段階認証を通った管理者だけが開ける。"""
+
+    def setUp(self):
+        cache.clear()
+        self.admin = User.objects.create_superuser("owner", password="correct-horse-1")
+
+    def test_anonymous_is_sent_to_login(self):
+        resp = self.client.get("/admin/")
+        self.assertRedirects(resp, reverse("accounts:login"), fetch_redirect_response=False)
+
+    def test_password_alone_does_not_open_admin(self):
+        self.client.post(reverse("accounts:login"), {"username": "owner", "password": "correct-horse-1"})
+        resp = self.client.get("/admin/")
+        self.assertRedirects(resp, reverse("accounts:two_factor"), fetch_redirect_response=False)
+
+    def test_admin_opens_after_two_factor(self):
+        device = TotpDevice.objects.create(user=self.admin, secret=TotpDevice.new_secret(), confirmed=True)
+        self.client.post(reverse("accounts:login"), {"username": "owner", "password": "correct-horse-1"})
+        self.client.post(reverse("accounts:two_factor"), {"code": pyotp.TOTP(device.secret).now()})
+        self.assertEqual(self.client.get("/admin/").status_code, 200)
+
+
 class Reset2faCommandTests(TestCase):
     def setUp(self):
         cache.clear()
