@@ -38,7 +38,9 @@ class XAccount(models.Model):
     def connect(cls, me, token):
         """連携したアカウントを作成 (連携済みなら更新) して、表示中にする。"""
         with transaction.atomic():
-            account = cls.objects.filter(x_user_id=me["id"]).first() or cls(x_user_id=me["id"])
+            account = cls.objects.filter(x_user_id=me["id"]).first() or cls(
+                x_user_id=me["id"]
+            )
             account.username = me["username"]
             account.name = me["name"]
             account.profile_image_url = me.get("profile_image_url", "")
@@ -74,20 +76,28 @@ class PostManager(models.Manager):
         """トップ画面用: 自分のツイート (他人への返信は除く)。"""
         return (
             self.filter(account=account, is_mine=True)
-            .filter(Q(in_reply_to_x_id__isnull=True) | Q(in_reply_to_x_id__in=self.my_post_ids(account)))
+            .filter(
+                Q(in_reply_to_x_id__isnull=True)
+                | Q(in_reply_to_x_id__in=self.my_post_ids(account))
+            )
             .order_by("-posted_at")[:200]
         )
 
     def replies_to_me(self, account):
         """自分のツイートへ来た返信。"""
-        return self.filter(account=account, is_mine=False, in_reply_to_x_id__in=self.my_post_ids(account))
+        return self.filter(
+            account=account,
+            is_mine=False,
+            in_reply_to_x_id__in=self.my_post_ids(account),
+        )
 
     def reply_threads(self, account):
         """リプライ画面用: 自分のツイートへ来た返信と、それへの自分の返事。"""
         mine = {p.x_id: p for p in self.filter(account=account, is_mine=True)}
         incoming = list(
-            self.filter(account=account, is_mine=False, in_reply_to_x_id__in=list(mine))
-            .order_by("-posted_at")[:200]
+            self.filter(
+                account=account, is_mine=False, in_reply_to_x_id__in=list(mine)
+            ).order_by("-posted_at")[:200]
         )
         answers = {}
         for p in sorted(
@@ -95,13 +105,19 @@ class PostManager(models.Manager):
         ):
             answers.setdefault(p.in_reply_to_x_id, []).append(p)
         return [
-            {"reply": r, "parent": mine[r.in_reply_to_x_id], "answers": answers.get(r.x_id, [])}
+            {
+                "reply": r,
+                "parent": mine[r.in_reply_to_x_id],
+                "answers": answers.get(r.x_id, []),
+            }
             for r in incoming
         ]
 
     def prune_unrelated_replies(self, account):
         """自分の投稿への返信でないもの (返信先が手元に無いもの) を消す。"""
-        self.filter(account=account, is_mine=False).exclude(in_reply_to_x_id__in=self.my_post_ids(account)).delete()
+        self.filter(account=account, is_mine=False).exclude(
+            in_reply_to_x_id__in=self.my_post_ids(account)
+        ).delete()
 
 
 class Post(models.Model):
@@ -110,7 +126,9 @@ class Post(models.Model):
     自分のツイート・自分の返信・他人から来た返信を、すべてこの1テーブルに入れる。
     """
 
-    account = models.ForeignKey(XAccount, on_delete=models.CASCADE, related_name="posts")
+    account = models.ForeignKey(
+        XAccount, on_delete=models.CASCADE, related_name="posts"
+    )
     x_id = models.CharField(max_length=32)
     text = models.TextField()
     posted_at = models.DateTimeField()
@@ -126,7 +144,9 @@ class Post(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["account", "x_id"], name="uniq_post_per_account")
+            models.UniqueConstraint(
+                fields=["account", "x_id"], name="uniq_post_per_account"
+            )
         ]
         indexes = [models.Index(fields=["account", "-posted_at"])]
         ordering = ["-posted_at"]

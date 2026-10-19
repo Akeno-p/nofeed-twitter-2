@@ -69,7 +69,9 @@ def _token_request(data):
             timeout=TIMEOUT,
         )
     except requests.RequestException as exc:
-        raise XApiError("Xに接続できませんでした。ネットワークを確認してください。") from exc
+        raise XApiError(
+            "Xに接続できませんでした。ネットワークを確認してください。"
+        ) from exc
     if resp.status_code != 200:
         try:
             body = resp.json()
@@ -78,7 +80,9 @@ def _token_request(data):
         # 原因をサーバーのログに残す (トークンは含めない)
         logger.warning(
             "X token endpoint returned %s: error=%s description=%s",
-            resp.status_code, body.get("error"), body.get("error_description"),
+            resp.status_code,
+            body.get("error"),
+            body.get("error_description"),
         )
         raise XApiError(
             "Xとの連携が無効になりました。連携をやり直してください。",
@@ -103,7 +107,9 @@ def _apply_token(account, token):
     account.access_token = token["access_token"]
     # 更新トークンは使うたびに新しくなる。返ってこなければ古いものを残す。
     account.refresh_token = token.get("refresh_token") or account.refresh_token
-    account.expires_at = timezone.now() + timedelta(seconds=int(token.get("expires_in", 7200)))
+    account.expires_at = timezone.now() + timedelta(
+        seconds=int(token.get("expires_in", 7200))
+    )
 
 
 # 更新トークンは1回しか使えない。2つの処理が同時に更新すると2つ目が失敗し、
@@ -124,7 +130,8 @@ def refresh(account):
 
         if not account.refresh_token:
             raise XApiError(
-                "Xの連携の有効期限が切れました。連携をやり直してください。", needs_reconnect=True
+                "Xの連携の有効期限が切れました。連携をやり直してください。",
+                needs_reconnect=True,
             )
         token = _token_request(
             {
@@ -154,11 +161,17 @@ def _error_message(resp):
     if status == 401:
         return "Xの認証が無効です。連携をやり直してください。", True
     if status == 402:
-        return "Xのクレジットが不足しています。Developer Console でチャージしてください。", False
+        return (
+            "Xのクレジットが不足しています。Developer Console でチャージしてください。",
+            False,
+        )
     if status == 403:
         return f"Xに拒否されました。{detail}".strip(), False
     if status == 429:
-        return "Xのリクエスト回数の上限に達しました。しばらく待ってからやり直してください。", False
+        return (
+            "Xのリクエスト回数の上限に達しました。しばらく待ってからやり直してください。",
+            False,
+        )
     return f"Xのエラー ({status}) {detail}".strip(), False
 
 
@@ -182,7 +195,9 @@ def request(account, method, path, **kwargs):
             refresh(account)
             resp = send()
     except requests.RequestException as exc:
-        raise XApiError("Xに接続できませんでした。ネットワークを確認してください。") from exc
+        raise XApiError(
+            "Xに接続できませんでした。ネットワークを確認してください。"
+        ) from exc
 
     if not resp.ok:
         message, reconnect = _error_message(resp)
@@ -200,7 +215,9 @@ def get_me(access_token):
             timeout=TIMEOUT,
         )
     except requests.RequestException as exc:
-        raise XApiError("Xに接続できませんでした。ネットワークを確認してください。") from exc
+        raise XApiError(
+            "Xに接続できませんでした。ネットワークを確認してください。"
+        ) from exc
     if not resp.ok:
         message, _ = _error_message(resp)
         raise XApiError(message, status=resp.status_code)

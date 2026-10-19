@@ -1,25 +1,56 @@
+<!-- prettier-ignore -->
 {% load core_tags %}
+<!-- prettier-ignore -->
 {# 投稿フォーム。fid はページ内で重複しないようにするための接頭辞 #}
 <div class="js-compose" data-url="{% url 'core:create_tweet' %}">
   <div class="flex gap-3.5">
+    <!-- prettier-ignore -->
     {% include "core/_avatar.html" with url=x_account.profile_image_url size="size-12" %}
     <div class="min-w-0 flex-1">
+      <!-- prettier-ignore -->
       {# 下線 (ボーダー) は外側の枠に付け、本文欄と添付画像のプレビューをその上に並べる #}
-      <div class="js-compose-box border-b border-slate-400 transition-colors focus-within:border-slate-500 has-[[aria-invalid=true]]:border-red-500">
+      <div
+        class="js-compose-box border-b border-slate-400 transition-colors focus-within:border-slate-500 has-[[aria-invalid=true]]:border-red-500"
+      >
         <label for="text-{{ fid }}" class="sr-only">ツイート本文</label>
-        <textarea id="text-{{ fid }}" name="text" rows="2" placeholder="なにしてる？" maxlength="{{ tweet_max_length }}"
-                  class="js-compose-text block max-h-[50vh] w-full resize-none overflow-hidden border-0 bg-transparent px-0 pb-1.5 pt-2.5 text-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-0"></textarea>
-        <ul class="js-previews js-gallery flex flex-wrap gap-2.5 pb-3.5 pt-2.5 empty:hidden" aria-label="添付する画像"></ul>
+        <textarea
+          id="text-{{ fid }}"
+          name="text"
+          rows="2"
+          placeholder="なにしてる？"
+          maxlength="{{ tweet_max_length }}"
+          class="js-compose-text block max-h-[50vh] w-full resize-none overflow-hidden border-0 bg-transparent px-0 pb-1.5 pt-2.5 text-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+        ></textarea>
+        <ul
+          class="js-previews js-gallery flex flex-wrap gap-2.5 pb-3.5 pt-2.5 empty:hidden"
+          aria-label="添付する画像"
+        ></ul>
       </div>
       <div class="mt-2.5 flex items-center">
-        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple class="js-compose-file sr-only" id="file-{{ fid }}">
-        <label for="file-{{ fid }}" class="js-add-image cursor-pointer rounded-full p-2 text-slate-500 transition hover:bg-slate-200 focus-within:outline-2" title="画像を添付 (4枚まで)">
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          multiple
+          class="js-compose-file sr-only"
+          id="file-{{ fid }}"
+        />
+        <label
+          for="file-{{ fid }}"
+          class="js-add-image cursor-pointer rounded-full p-2 text-slate-500 transition hover:bg-slate-200 focus-within:outline-2"
+          title="画像を添付 (4枚まで)"
+        >
+          <!-- prettier-ignore -->
           {% icon "image" "size-7" %}<span class="sr-only">画像を添付</span>
         </label>
+        <!-- prettier-ignore -->
         <span class="js-count ml-auto mr-3.5 text-base text-slate-500" aria-live="polite">0/{{ tweet_max_length }}</span>
+        <!-- prettier-ignore -->
         <button type="button" class="js-compose-submit inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-6" %}ツイート</button>
       </div>
-      <p class="js-form-error mt-2.5 hidden text-base text-red-600" role="alert"></p>
+      <p
+        class="js-form-error mt-2.5 hidden text-base text-red-600"
+        role="alert"
+      ></p>
     </div>
   </div>
 </div>

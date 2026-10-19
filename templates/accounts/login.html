@@ -1,31 +1,69 @@
+<!-- prettier-ignore -->
 {% extends "base.html" %}
+<!-- prettier-ignore -->
 {% load core_tags %}
+<!-- prettier-ignore -->
 {% block title %}ログイン - nofeed-twitter{% endblock %}
+<!-- prettier-ignore -->
 {% block body %}
-<main class="mx-auto flex min-h-screen w-full max-w-84 flex-col justify-center px-4 pb-16">
-  <h1 class="mb-10 text-center text-4xl font-bold tracking-tight text-slate-700">nofeed-twitter</h1>
+<main
+  class="mx-auto flex min-h-screen w-full max-w-84 flex-col justify-center px-4 pb-16"
+>
+  <h1
+    class="mb-10 text-center text-4xl font-bold tracking-tight text-slate-700"
+  >
+    nofeed-twitter
+  </h1>
   <div class="js-auth space-y-6" data-url="{% url 'accounts:login' %}">
     <div>
-      <label for="username" class="mb-2 block text-sm font-bold text-slate-600">ユーザー名</label>
+      <label for="username" class="mb-2 block text-sm font-bold text-slate-600"
+        >ユーザー名</label
+      >
       <div class="relative">
+        <!-- prettier-ignore -->
         <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">{% icon "user" "size-5" %}</span>
-        <input id="username" name="username" type="text" autocomplete="username" placeholder="user1" autofocus required
-               class="w-full rounded-lg border-2 border-slate-400 bg-white py-2.5 pl-11 pr-3 text-slate-700 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 aria-invalid:border-red-500 aria-invalid:ring-2 aria-invalid:ring-red-200">
+        <input
+          id="username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          placeholder="user1"
+          autofocus
+          required
+          class="w-full rounded-lg border-2 border-slate-400 bg-white py-2.5 pl-11 pr-3 text-slate-700 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 aria-invalid:border-red-500 aria-invalid:ring-2 aria-invalid:ring-red-200"
+        />
       </div>
     </div>
     <div>
-      <label for="password" class="mb-2 block text-sm font-bold text-slate-600">パスワード</label>
+      <label for="password" class="mb-2 block text-sm font-bold text-slate-600"
+        >パスワード</label
+      >
       <div class="relative">
+        <!-- prettier-ignore -->
         <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">{% icon "key-round" "size-5" %}</span>
-        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="1234" required
-               class="w-full rounded-lg border-2 border-slate-400 bg-white py-2.5 pl-11 pr-3 text-slate-700 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 aria-invalid:border-red-500 aria-invalid:ring-2 aria-invalid:ring-red-200">
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="1234"
+          required
+          class="w-full rounded-lg border-2 border-slate-400 bg-white py-2.5 pl-11 pr-3 text-slate-700 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 aria-invalid:border-red-500 aria-invalid:ring-2 aria-invalid:ring-red-200"
+        />
       </div>
     </div>
     <div class="pt-4">
+      <!-- prettier-ignore -->
       <button type="button" class="js-auth-submit inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "log-in" "size-5" %}ログイン</button>
+      <!-- prettier-ignore -->
       {# 文章が出ても下の要素が動かないよう、エラーがなくても1行分の高さを確保しておく #}
-      <p id="form-error" role="alert" class="mt-3 min-h-5 text-sm text-red-600"></p>
+      <p
+        id="form-error"
+        role="alert"
+        class="mt-3 min-h-5 text-sm text-red-600"
+      ></p>
     </div>
   </div>
 </main>
+<!-- prettier-ignore -->
 {% endblock %}

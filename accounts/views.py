@@ -62,7 +62,9 @@ def login_view(request):
         if user is None:
             throttle.record_failure("login", ident)
             # どちらが違うのかは伝えない (ユーザー名の存在を推測されないため)
-            return _fail("ユーザー名またはパスワードが間違っています", ["username", "password"])
+            return _fail(
+                "ユーザー名またはパスワードが間違っています", ["username", "password"]
+            )
         throttle.reset("login", ident)
         login(request, user)  # セッションIDは入れ替わる
         request.session[SESSION_KEY] = False
@@ -81,7 +83,9 @@ def two_factor_view(request):
 
     device = TotpDevice.objects.filter(user=request.user).first()
     if device is None:
-        device = TotpDevice.objects.create(user=request.user, secret=TotpDevice.new_secret())
+        device = TotpDevice.objects.create(
+            user=request.user, secret=TotpDevice.new_secret()
+        )
     setting_up = not device.confirmed
 
     if request.method == "POST":

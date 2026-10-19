@@ -1,6 +1,10 @@
+<!-- prettier-ignore -->
 {% load core_tags %}
 <p class="flex flex-wrap items-baseline gap-x-2.5 text-base">
+  <!-- prettier-ignore -->
   <span class="font-semibold text-slate-700">{{ post.author_name }}</span>
+  <!-- prettier-ignore -->
   <span class="text-slate-500">@{{ post.author_username }}</span>
+  <!-- prettier-ignore -->
   <span class="text-slate-500"><span aria-hidden="true">・</span>{% post_time post.posted_at %}</span>
 </p>

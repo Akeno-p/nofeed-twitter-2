@@ -1,70 +1,121 @@
+<!-- prettier-ignore -->
 {% extends "base.html" %}
+<!-- prettier-ignore -->
 {% load core_tags %}
+<!-- prettier-ignore -->
 {% block body %}
 <div class="flex min-h-screen">
+  <!-- prettier-ignore -->
   {# ---- サイドバー ---- #}
-  <aside class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-slate-200 px-5 py-6 md:flex lg:w-80">
-    <a href="{% url 'core:tweets' %}" class="px-1.5 text-3xl font-bold tracking-tight text-slate-700">nofeed-twitter</a>
+  <aside
+    class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-slate-200 px-5 py-6 md:flex lg:w-80"
+  >
+    <a
+      href="{% url 'core:tweets' %}"
+      class="px-1.5 text-3xl font-bold tracking-tight text-slate-700"
+      >nofeed-twitter</a
+    >
 
     <nav class="mt-9 space-y-2.5" aria-label="メイン">
+      <!-- prettier-ignore -->
       <a href="{% url 'core:tweets' %}" {% if nav == "tweets" %}aria-current="page"{% endif %}
          class="flex items-center gap-3.5 rounded-xl px-5 py-3.5 text-lg text-slate-700 transition {% if nav == 'tweets' %}bg-slate-200 font-medium{% else %}hover:bg-slate-200{% endif %}">
         {% icon "house" "size-7" %}ツイート
       </a>
+      <!-- prettier-ignore -->
       <a href="{% url 'core:replies' %}" {% if nav == "replies" %}aria-current="page"{% endif %}
          class="flex items-center gap-3.5 rounded-xl px-5 py-3.5 text-lg text-slate-700 transition {% if nav == 'replies' %}bg-slate-200 font-medium{% else %}hover:bg-slate-200{% endif %}">
         {% icon "undo-2" "size-7" %}リプライ
       </a>
     </nav>
 
+    <!-- prettier-ignore -->
     <button type="button" class="mt-7 inline-flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50" data-open-compose {% if not x_account %}disabled{% endif %}>
       {% icon "send" "size-6" %}ツイート
     </button>
 
     <div class="relative mt-auto border-t border-slate-200 pt-5">
+      <!-- prettier-ignore -->
       {# ---- 設定メニュー ---- #}
-      <div id="settings-menu" hidden class="absolute bottom-full left-0 z-30 mb-2.5 w-96 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-3.5 shadow-lg">
-        <p class="px-2.5 pb-2.5 text-sm font-semibold text-slate-500">連携中のXアカウント</p>
+      <div
+        id="settings-menu"
+        hidden
+        class="absolute bottom-full left-0 z-30 mb-2.5 w-96 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-3.5 shadow-lg"
+      >
+        <p class="px-2.5 pb-2.5 text-sm font-semibold text-slate-500">
+          連携中のXアカウント
+        </p>
         <ul class="space-y-1.5">
+          <!-- prettier-ignore -->
           {% for acc in x_accounts %}
-            <li class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 {% if acc.is_active %}bg-slate-100{% endif %}">
-              {% include "core/_avatar.html" with url=acc.profile_image_url size="size-9" %}
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-base font-medium text-slate-700">{{ acc.name }}</p>
-                <p class="truncate text-sm text-slate-500">@{{ acc.username }}</p>
-              </div>
-              {% if acc.is_active %}
-                <span class="flex items-center gap-1.5 text-sm text-slate-600">{% icon "check" "size-5" %}使用中</span>
-              {% else %}
-                <button type="button" data-url="{% url 'core:x_switch' acc.pk %}"
-                        class="js-x-switch rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-100">切り替え</button>
-              {% endif %}
-              <button type="button" data-url="{% url 'core:x_disconnect' acc.pk %}" aria-label="@{{ acc.username }} の連携を削除"
+          <li
+            class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 {% if acc.is_active %}bg-slate-100{% endif %}"
+          >
+            <!-- prettier-ignore -->
+            {% include "core/_avatar.html" with url=acc.profile_image_url size="size-9" %}
+            <div class="min-w-0 flex-1">
+              <!-- prettier-ignore -->
+              <p class="truncate text-base font-medium text-slate-700">{{ acc.name }}</p>
+              <!-- prettier-ignore -->
+              <p class="truncate text-sm text-slate-500">@{{ acc.username }}</p>
+            </div>
+            <!-- prettier-ignore -->
+            {% if acc.is_active %}
+            <!-- prettier-ignore -->
+            <span class="flex items-center gap-1.5 text-sm text-slate-600">{% icon "check" "size-5" %}使用中</span>
+            <!-- prettier-ignore -->
+            {% else %}
+            <button
+              type="button"
+              data-url="{% url 'core:x_switch' acc.pk %}"
+              class="js-x-switch rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+            >
+              切り替え
+            </button>
+            <!-- prettier-ignore -->
+            {% endif %}
+            <!-- prettier-ignore -->
+            <button type="button" data-url="{% url 'core:x_disconnect' acc.pk %}" aria-label="@{{ acc.username }} の連携を削除"
                       data-confirm="@{{ acc.username }} の連携を削除します。保存しているツイートの記録も消えます (Xのツイート自体は消えません)。よろしいですか？"
                       class="js-x-disconnect rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">{% icon "trash-2" "size-5" %}</button>
-            </li>
+          </li>
+          <!-- prettier-ignore -->
           {% empty %}
-            <li class="px-2.5 py-1.5 text-base text-slate-500">連携しているアカウントはありません</li>
+          <li class="px-2.5 py-1.5 text-base text-slate-500">
+            連携しているアカウントはありません
+          </li>
+          <!-- prettier-ignore -->
           {% endfor %}
         </ul>
+        <!-- prettier-ignore -->
         {% if x_configured %}
-          <a href="{% url 'core:x_connect' %}" class="mt-2.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "plus" "size-5" %}Xアカウントを追加</a>
+        <!-- prettier-ignore -->
+        <a href="{% url 'core:x_connect' %}" class="mt-2.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "plus" "size-5" %}Xアカウントを追加</a>
+        <!-- prettier-ignore -->
         {% endif %}
         <div class="mt-2.5 border-t border-slate-200 pt-2.5">
+          <!-- prettier-ignore -->
           <button type="button" data-url="{% url 'accounts:logout' %}"
                   class="js-logout flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "log-out" "size-5" %}ログアウト</button>
         </div>
       </div>
       <div class="flex items-center gap-3.5">
+        <!-- prettier-ignore -->
         {% if x_account %}
-          {% include "core/_avatar.html" with url=x_account.profile_image_url size="size-12" %}
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-lg font-semibold text-slate-700">{{ x_account.name }}</p>
-            <p class="truncate text-base text-slate-500">@{{ x_account.username }}</p>
-          </div>
+        <!-- prettier-ignore -->
+        {% include "core/_avatar.html" with url=x_account.profile_image_url size="size-12" %}
+        <div class="min-w-0 flex-1">
+          <!-- prettier-ignore -->
+          <p class="truncate text-lg font-semibold text-slate-700">{{ x_account.name }}</p>
+          <!-- prettier-ignore -->
+          <p class="truncate text-base text-slate-500">@{{ x_account.username }}</p>
+        </div>
+        <!-- prettier-ignore -->
         {% else %}
-          <p class="flex-1 text-base text-slate-500">未連携</p>
+        <p class="flex-1 text-base text-slate-500">未連携</p>
+        <!-- prettier-ignore -->
         {% endif %}
+        <!-- prettier-ignore -->
         <button type="button" id="settings-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="settings-menu"
                 aria-label="設定" class="rounded-full p-2.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
           {% icon "settings" "size-7" %}
@@ -74,86 +125,173 @@
   </aside>
 
   <div class="min-w-0 flex-1">
+    <!-- prettier-ignore -->
     {# ---- 狭い画面用の上部バー ---- #}
-    <nav class="flex items-center gap-1.5 border-b border-slate-200 px-3.5 py-2.5 md:hidden" aria-label="メイン">
-      <a href="{% url 'core:tweets' %}" class="rounded-lg px-3.5 py-2.5 text-base {% if nav == 'tweets' %}bg-slate-200 font-medium{% endif %}">ツイート</a>
-      <a href="{% url 'core:replies' %}" class="rounded-lg px-3.5 py-2.5 text-base {% if nav == 'replies' %}bg-slate-200 font-medium{% endif %}">リプライ</a>
+    <nav
+      class="flex items-center gap-1.5 border-b border-slate-200 px-3.5 py-2.5 md:hidden"
+      aria-label="メイン"
+    >
+      <a
+        href="{% url 'core:tweets' %}"
+        class="rounded-lg px-3.5 py-2.5 text-base {% if nav == 'tweets' %}bg-slate-200 font-medium{% endif %}"
+        >ツイート</a
+      >
+      <a
+        href="{% url 'core:replies' %}"
+        class="rounded-lg px-3.5 py-2.5 text-base {% if nav == 'replies' %}bg-slate-200 font-medium{% endif %}"
+        >リプライ</a
+      >
+      <!-- prettier-ignore -->
       <button type="button" class="ml-auto rounded-lg bg-slate-700 px-3.5 py-2.5 text-base text-white disabled:opacity-50" data-open-compose {% if not x_account %}disabled{% endif %}>ツイート</button>
+      <!-- prettier-ignore -->
       <button type="button" data-url="{% url 'accounts:logout' %}" class="js-logout rounded-lg p-2.5 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-6" %}</button>
     </nav>
 
     <main>
-      <header class="flex h-20 items-center justify-between border-b border-slate-200 px-7">
+      <header
+        class="flex h-20 items-center justify-between border-b border-slate-200 px-7"
+      >
+        <!-- prettier-ignore -->
         <h1 class="text-3xl font-bold text-slate-700">{% block heading %}{% endblock %}</h1>
+        <!-- prettier-ignore -->
         {% block header_action %}{% endblock %}
       </header>
 
+      <!-- prettier-ignore -->
       {% if flash %}
-        <p role="status" class="flash mx-7 mt-5 rounded-lg bg-slate-200 px-5 py-3 text-base text-slate-700">{{ flash }}</p>
+      <!-- prettier-ignore -->
+      <p role="status" class="flash mx-7 mt-5 rounded-lg bg-slate-200 px-5 py-3 text-base text-slate-700">{{ flash }}</p>
+      <!-- prettier-ignore -->
       {% endif %}
-      <p id="error-banner" role="alert" class="mx-7 mt-5 hidden items-start gap-2.5 rounded-lg bg-red-50 px-5 py-3 text-base text-red-700"></p>
+      <p
+        id="error-banner"
+        role="alert"
+        class="mx-7 mt-5 hidden items-start gap-2.5 rounded-lg bg-red-50 px-5 py-3 text-base text-red-700"
+      ></p>
 
+      <!-- prettier-ignore -->
       {% if not x_account %}
-        <section class="mx-auto mt-20 max-w-lg px-7 text-center">
-          <h2 class="text-xl font-bold text-slate-700">Xアカウントを連携してください</h2>
-          {% if x_configured %}
-            <p class="mt-2.5 text-base leading-relaxed text-slate-600">ツイートの投稿やリプライの確認には、Xアカウントとの連携が必要です。</p>
-            <a href="{% url 'core:x_connect' %}" class="mt-7 inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700">Xアカウントを連携する</a>
-          {% endif %}
-        </section>
+      <section class="mx-auto mt-20 max-w-lg px-7 text-center">
+        <h2 class="text-xl font-bold text-slate-700">
+          Xアカウントを連携してください
+        </h2>
+        <!-- prettier-ignore -->
+        {% if x_configured %}
+        <p class="mt-2.5 text-base leading-relaxed text-slate-600">
+          ツイートの投稿やリプライの確認には、Xアカウントとの連携が必要です。
+        </p>
+        <a
+          href="{% url 'core:x_connect' %}"
+          class="mt-7 inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700"
+          >Xアカウントを連携する</a
+        >
+        <!-- prettier-ignore -->
+        {% endif %}
+      </section>
+      <!-- prettier-ignore -->
       {% else %}
-        {% block content %}{% endblock %}
+      <!-- prettier-ignore -->
+      {% block content %}{% endblock %}
+      <!-- prettier-ignore -->
       {% endif %}
     </main>
   </div>
 </div>
 
+<!-- prettier-ignore -->
 {# ---- 画像の拡大表示 (外側クリック・Esc・×で閉じる。複数枚なら矢印キーかボタンで切り替え) ---- #}
-<dialog id="lightbox" aria-label="画像の拡大表示"
-        class="m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-black/85 focus:outline-none">
-  <div class="js-lightbox-bg flex h-full w-full items-center justify-center p-5 sm:p-11">
-    <img id="lightbox-img" alt="" referrerpolicy="no-referrer"
-         class="max-h-full max-w-full rounded-lg object-contain shadow-2xl">
+<dialog
+  id="lightbox"
+  aria-label="画像の拡大表示"
+  class="m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-black/85 focus:outline-none"
+>
+  <div
+    class="js-lightbox-bg flex h-full w-full items-center justify-center p-5 sm:p-11"
+  >
+    <img
+      id="lightbox-img"
+      alt=""
+      referrerpolicy="no-referrer"
+      class="max-h-full max-w-full rounded-lg object-contain shadow-2xl"
+    />
   </div>
+  <!-- prettier-ignore -->
   <button type="button" data-lightbox-close aria-label="閉じる"
           class="absolute right-5 top-5 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70">{% icon "x" "size-7" %}</button>
+  <!-- prettier-ignore -->
   <button type="button" id="lightbox-prev" aria-label="前の画像" hidden
           class="absolute left-5 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70">{% icon "chevron-left" "size-7" %}</button>
+  <!-- prettier-ignore -->
   <button type="button" id="lightbox-next" aria-label="次の画像" hidden
           class="absolute right-5 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70">{% icon "chevron-right" "size-7" %}</button>
-  <p id="lightbox-count" aria-live="polite" hidden
-     class="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3.5 py-1.5 text-base text-white"></p>
+  <p
+    id="lightbox-count"
+    aria-live="polite"
+    hidden
+    class="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3.5 py-1.5 text-base text-white"
+  ></p>
 </dialog>
 
+<!-- prettier-ignore -->
 {# ---- 通知 (画面下の中央に、少しの間だけ出る) ---- #}
-<div class="pointer-events-none fixed inset-x-0 bottom-9 z-50 flex justify-center px-5">
-  <p id="toast" role="status" aria-live="polite" aria-atomic="true"
-     class="translate-y-3.5 rounded-full px-7 py-3.5 text-lg font-bold text-white opacity-0 shadow-lg transition duration-200 motion-reduce:transition-none"></p>
+<div
+  class="pointer-events-none fixed inset-x-0 bottom-9 z-50 flex justify-center px-5"
+>
+  <p
+    id="toast"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    class="translate-y-3.5 rounded-full px-7 py-3.5 text-lg font-bold text-white opacity-0 shadow-lg transition duration-200 motion-reduce:transition-none"
+  ></p>
 </div>
 
+<!-- prettier-ignore -->
 {# ---- 元のツイート (リプライ画面の「◯◯に対しての返信」を押すと開く) ---- #}
-<dialog id="parent-dialog" aria-labelledby="parent-dialog-title"
-        class="m-auto max-h-[85vh] w-11/12 max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-0 text-slate-700 shadow-xl backdrop:bg-slate-900/40">
-  <div class="flex items-center justify-between border-b border-slate-200 px-6 py-3.5">
+<dialog
+  id="parent-dialog"
+  aria-labelledby="parent-dialog-title"
+  class="m-auto max-h-[85vh] w-11/12 max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-0 text-slate-700 shadow-xl backdrop:bg-slate-900/40"
+>
+  <div
+    class="flex items-center justify-between border-b border-slate-200 px-6 py-3.5"
+  >
     <h2 id="parent-dialog-title" class="text-lg font-bold">元のツイート</h2>
+    <!-- prettier-ignore -->
     <button type="button" data-parent-close aria-label="閉じる" class="cursor-pointer rounded-full p-2 text-slate-500 hover:bg-slate-200">{% icon "x" "size-6" %}</button>
   </div>
   <div id="parent-dialog-body" class="px-6 py-5"></div>
 </dialog>
 
+<!-- prettier-ignore -->
 {# ---- 投稿用モーダル ---- #}
+<!-- prettier-ignore -->
 {% if x_account %}
-<dialog id="compose-dialog" aria-labelledby="compose-title" class="m-auto w-11/12 max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-0 shadow-xl backdrop:bg-slate-900/40">
-  <div class="flex items-center justify-between border-b border-slate-200 px-6 py-3.5">
-    <h2 id="compose-title" class="text-lg font-bold text-slate-700">ツイートする</h2>
+<dialog
+  id="compose-dialog"
+  aria-labelledby="compose-title"
+  class="m-auto w-11/12 max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-0 shadow-xl backdrop:bg-slate-900/40"
+>
+  <div
+    class="flex items-center justify-between border-b border-slate-200 px-6 py-3.5"
+  >
+    <h2 id="compose-title" class="text-lg font-bold text-slate-700">
+      ツイートする
+    </h2>
+    <!-- prettier-ignore -->
     <button type="button" data-close-compose aria-label="閉じる" class="rounded-full p-2 text-slate-500 hover:bg-slate-200">{% icon "x" "size-6" %}</button>
   </div>
+  <!-- prettier-ignore -->
   <div class="px-6 py-5">{% include "core/_compose.html" with fid="modal" %}</div>
 </dialog>
+<!-- prettier-ignore -->
 {% endif %}
+<!-- prettier-ignore -->
 {% endblock %}
 
+<!-- prettier-ignore -->
 {% block scripts %}
+<!-- prettier-ignore -->
 {# メイン画面 (ツイート・リプライ) の処理。部品 (core/_*.html) の処理もここに書く (部品は何度も読み込まれるため) #}
 <script>
   const MAX_IMAGES = 4;
@@ -165,7 +303,10 @@
     $banner.empty().append($("<span>").text(msg));
     if (reconnect) {
       $banner.append(
-        $("<a>").attr("href", "/x/connect/").addClass("ml-2.5 underline").text("連携し直す")
+        $("<a>")
+          .attr("href", "/x/connect/")
+          .addClass("ml-2.5 underline")
+          .text("連携し直す"),
       );
     }
     $banner.removeClass("hidden").addClass("flex");
@@ -176,14 +317,18 @@
   }
   function errorOf(xhr) {
     const body = xhr.responseJSON || {};
-    return [body.error || "通信に失敗しました。もう一度お試しください。", !!body.needs_reconnect];
+    return [
+      body.error || "通信に失敗しました。もう一度お試しください。",
+      !!body.needs_reconnect,
+    ];
   }
 
   // ---- 入力エラー: 該当の入力欄を赤くし、ボタンの下に理由を出す ----
   function setFormError($form, msg, field) {
     clearFormError($form);
     $form.find(".js-form-error").text(msg).removeClass("hidden");
-    if (field === "text") $form.find(".js-compose-text").attr("aria-invalid", "true");
+    if (field === "text")
+      $form.find(".js-compose-text").attr("aria-invalid", "true");
   }
   function clearFormError($form) {
     $form.find(".js-form-error").addClass("hidden").empty();
@@ -243,13 +388,19 @@
 
   function stepGallery(delta) {
     if (galleryUrls.length < 2) return;
-    galleryIndex = (galleryIndex + delta + galleryUrls.length) % galleryUrls.length;
+    galleryIndex =
+      (galleryIndex + delta + galleryUrls.length) % galleryUrls.length;
     showGalleryImage();
   }
 
   $(document).on("click", ".js-zoom", function () {
     const $gallery = $(this).closest(".js-gallery");
-    galleryUrls = $gallery.find("img").map(function () { return this.getAttribute("src"); }).get();
+    galleryUrls = $gallery
+      .find("img")
+      .map(function () {
+        return this.getAttribute("src");
+      })
+      .get();
     galleryIndex = $gallery.find(".js-zoom").index(this);
     showGalleryImage();
     lightbox.showModal();
@@ -259,12 +410,19 @@
     $("html").removeClass("overflow-hidden");
     $("#lightbox-img").removeAttr("src");
   });
-  $("[data-lightbox-close]").on("click", function () { lightbox.close(); });
-  $("#lightbox-prev").on("click", function () { stepGallery(-1); });
-  $("#lightbox-next").on("click", function () { stepGallery(1); });
+  $("[data-lightbox-close]").on("click", function () {
+    lightbox.close();
+  });
+  $("#lightbox-prev").on("click", function () {
+    stepGallery(-1);
+  });
+  $("#lightbox-next").on("click", function () {
+    stepGallery(1);
+  });
   $(lightbox).on("click", function (e) {
     // 画像やボタン以外 (外側) を押したら閉じる
-    if (e.target === lightbox || $(e.target).hasClass("js-lightbox-bg")) lightbox.close();
+    if (e.target === lightbox || $(e.target).hasClass("js-lightbox-bg"))
+      lightbox.close();
   });
   $(document).on("keydown", function (e) {
     if (!lightbox || !lightbox.open) return;
@@ -282,11 +440,15 @@
     parentDialog.scrollTop = 0;
     parentDialog.showModal();
   });
-  $("[data-parent-close]").on("click", function () { parentDialog.close(); });
+  $("[data-parent-close]").on("click", function () {
+    parentDialog.close();
+  });
   $(parentDialog).on("click", function (e) {
     if (e.target === parentDialog) parentDialog.close(); // 外側クリックで閉じる
   });
-  $(parentDialog).on("close", function () { $("#parent-dialog-body").empty(); });
+  $(parentDialog).on("close", function () {
+    $("#parent-dialog-body").empty();
+  });
 
   // ---- 投稿日時: 「今」「◯分」「◯時間」を、開いたままでも更新する (_post_header.html) ----
   // 判定の基準は サーバー (core_tags.time_label) と同じ。24時間以上は、サーバーが出した日付を使う。
@@ -312,7 +474,9 @@
     const message = $(this).attr("data-confirm");
     if (message && !window.confirm(message)) return;
     $.post($(this).attr("data-url"))
-      .done(function () { location.reload(); })
+      .done(function () {
+        location.reload();
+      })
       .fail(function (xhr) {
         setMenu(false);
         showError(errorOf(xhr)[0]);
@@ -347,13 +511,16 @@
     const borders = el.offsetHeight - el.clientHeight; // 枠線の分 (border-box なので足す)
     el.style.height = el.scrollHeight + borders + "px";
     // 上限 (max-height) を超えたときだけ、スクロールバーを出す
-    el.style.overflowY = el.scrollHeight > el.clientHeight + 1 ? "auto" : "hidden";
+    el.style.overflowY =
+      el.scrollHeight > el.clientHeight + 1 ? "auto" : "hidden";
   }
   $(document).on("input", ".js-compose-text", function () {
     autoGrow(this);
   });
   $(window).on("resize", function () {
-    $(".js-compose-text").each(function () { autoGrow(this); }); // 幅が変わると折り返しも変わる
+    $(".js-compose-text").each(function () {
+      autoGrow(this);
+    }); // 幅が変わると折り返しも変わる
   });
 
   // ---- 投稿モーダル ----
@@ -361,7 +528,12 @@
   $("[data-open-compose]").on("click", function () {
     if (!dialog) return;
     dialog.showModal();
-    $(dialog).find("textarea").each(function () { autoGrow(this); }).trigger("focus");
+    $(dialog)
+      .find("textarea")
+      .each(function () {
+        autoGrow(this);
+      })
+      .trigger("focus");
   });
   $("[data-close-compose]").on("click", function () {
     dialog.close();
@@ -374,7 +546,10 @@
   function updateCount($form) {
     const len = Array.from($form.find(".js-compose-text").val()).length;
     const max = Number($form.find(".js-compose-text").attr("maxlength"));
-    $form.find(".js-count").text(len + "/" + max).toggleClass("text-red-600", len >= max);
+    $form
+      .find(".js-count")
+      .text(len + "/" + max)
+      .toggleClass("text-red-600", len >= max);
   }
   $(document).on("input", ".js-compose-text", function () {
     updateCount($(this).closest(COMPOSE));
@@ -394,7 +569,12 @@
       .toggleClass("cursor-pointer hover:bg-slate-200", !full)
       .toggleClass("cursor-not-allowed opacity-40", full)
       .attr("aria-disabled", full ? "true" : null)
-      .attr("title", full ? "画像は" + MAX_IMAGES + "枚までです" : "画像を添付 (" + MAX_IMAGES + "枚まで)");
+      .attr(
+        "title",
+        full
+          ? "画像は" + MAX_IMAGES + "枚までです"
+          : "画像を添付 (" + MAX_IMAGES + "枚まで)",
+      );
   }
   // プレビュー用の一時的な画像URL。拡大表示でも同じURLを使うので、読み込み後ではなく、
   // プレビューを作り直すとき (画像を外した・投稿した) に破棄する。
@@ -402,7 +582,9 @@
   function renderPreviews($form) {
     const files = picked.get($form[0]) || [];
     updateAddImage($form, files.length);
-    (previewUrls.get($form[0]) || []).forEach(function (u) { URL.revokeObjectURL(u); });
+    (previewUrls.get($form[0]) || []).forEach(function (u) {
+      URL.revokeObjectURL(u);
+    });
     const urls = [];
     previewUrls.set($form[0], urls);
     const $list = $form.find(".js-previews").empty();
@@ -413,16 +595,20 @@
       // 画像を押すと拡大表示 (投稿済みの画像と同じ部品。.js-gallery 内の .js-zoom が対象)
       $("<button>")
         .attr({ type: "button", "aria-label": "画像 " + (i + 1) + " を拡大" })
-        .addClass("js-zoom block cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500")
+        .addClass(
+          "js-zoom block cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500",
+        )
         .append(
           $("<img>")
             .attr({ src: url, alt: "添付画像 " + (i + 1) })
-            .addClass("size-32 rounded-lg object-cover")
+            .addClass("size-32 rounded-lg object-cover"),
         )
         .appendTo($li);
       $("<button>")
         .attr({ type: "button", "aria-label": "画像 " + (i + 1) + " を外す" })
-        .addClass("absolute -right-2 -top-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-sm text-white")
+        .addClass(
+          "absolute -right-2 -top-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-sm text-white",
+        )
         .text("×")
         .on("click", function () {
           files.splice(i, 1);
@@ -438,7 +624,8 @@
     const incoming = Array.from(this.files);
     const room = MAX_IMAGES - files.length;
     clearFormError($form);
-    if (incoming.length > room) setFormError($form, "画像は" + MAX_IMAGES + "枚までです", "images");
+    if (incoming.length > room)
+      setFormError($form, "画像は" + MAX_IMAGES + "枚までです", "images");
     files.push.apply(files, incoming.slice(0, room));
     picked.set($form[0], files);
     this.value = "";
@@ -458,8 +645,11 @@
 
     const data = new FormData();
     data.append("text", text);
-    if ($form.attr("data-reply-to")) data.append("reply_to", $form.attr("data-reply-to"));
-    files.forEach(function (f) { data.append("images", f); });
+    if ($form.attr("data-reply-to"))
+      data.append("reply_to", $form.attr("data-reply-to"));
+    files.forEach(function (f) {
+      data.append("images", f);
+    });
 
     clearError();
     clearFormError($form);
@@ -472,7 +662,12 @@
       contentType: false,
     })
       .done(function (res) {
-        $form.find(".js-compose-text").val("").each(function () { autoGrow(this); });
+        $form
+          .find(".js-compose-text")
+          .val("")
+          .each(function () {
+            autoGrow(this);
+          });
         picked.delete($form[0]);
         renderPreviews($form);
         updateCount($form);
@@ -547,4 +742,5 @@
     if (e.target === this) this.close(); // 外側クリックはキャンセル扱い
   });
 </script>
+<!-- prettier-ignore -->
 {% endblock %}

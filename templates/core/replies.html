@@ -1,17 +1,36 @@
+<!-- prettier-ignore -->
 {% extends "app.html" %}
+<!-- prettier-ignore -->
 {% load core_tags %}
+<!-- prettier-ignore -->
 {% block title %}リプライ - nofeed-twitter{% endblock %}
+<!-- prettier-ignore -->
 {% block heading %}リプライ{% endblock %}
+<!-- prettier-ignore -->
 {% block header_action %}
-  <button type="button" class="js-sync inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-slate-400 bg-white px-5 py-2.5 text-base text-slate-700 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60" data-confirm="#sync-confirm-dialog" data-url="{% url 'core:sync_replies' %}" data-target="#reply-list">
-    {% icon "list-end" "size-6" %}<span class="js-sync-label">リプライ取得</span>
-  </button>
-  {% include "core/_sync_confirm.html" with title="新しいリプライを取得しますか？" %}
+<button
+  type="button"
+  class="js-sync inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-slate-400 bg-white px-5 py-2.5 text-base text-slate-700 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60"
+  data-confirm="#sync-confirm-dialog"
+  data-url="{% url 'core:sync_replies' %}"
+  data-target="#reply-list"
+>
+  <!-- prettier-ignore -->
+  {% icon "list-end" "size-6" %}<span class="js-sync-label">リプライ取得</span>
+</button>
+<!-- prettier-ignore -->
+{% include "core/_sync_confirm.html" with title="新しいリプライを取得しますか？" %}
+<!-- prettier-ignore -->
 {% endblock %}
+<!-- prettier-ignore -->
 {% block content %}
-  <div id="reply-list">{% include "core/_reply_list.html" %}</div>
+<!-- prettier-ignore -->
+<div id="reply-list">{% include "core/_reply_list.html" %}</div>
+<!-- prettier-ignore -->
 {% endblock %}
+<!-- prettier-ignore -->
 {% block scripts %}
+<!-- prettier-ignore -->
 {{ block.super }}
 <script>
   // ---- 返信欄の開閉 (_reply_list.html の「返信する」) ----
@@ -20,7 +39,14 @@
     const open = $form.hasClass("hidden");
     $form.toggleClass("hidden", !open);
     $(this).attr("aria-expanded", open);
-    if (open) $form.find("textarea").each(function () { autoGrow(this); }).trigger("focus");
+    if (open)
+      $form
+        .find("textarea")
+        .each(function () {
+          autoGrow(this);
+        })
+        .trigger("focus");
   });
 </script>
+<!-- prettier-ignore -->
 {% endblock %}

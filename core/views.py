@@ -12,7 +12,6 @@ from django.views.decorators.http import require_POST
 from . import services, x_api
 from .models import Post, XAccount
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -27,13 +26,17 @@ def api_view(view):
     def wrapper(request, *args, **kwargs):
         account = XAccount.objects.active()
         if account is None:
-            return _json_error("Xアカウントが連携されていません。", needs_reconnect=True)
+            return _json_error(
+                "Xアカウントが連携されていません。", needs_reconnect=True
+            )
         try:
             return view(request, account, *args, **kwargs)
         except services.ValidationError as exc:
             return _json_error(str(exc), field=exc.field)
         except x_api.XApiError as exc:
-            return _json_error(exc.message, status=502, needs_reconnect=exc.needs_reconnect)
+            return _json_error(
+                exc.message, status=502, needs_reconnect=exc.needs_reconnect
+            )
 
     return wrapper
 
@@ -76,11 +79,17 @@ def replies_page(request):
 
 
 def _tweets_html(request, account):
-    return render_to_string("core/_tweet_list.html", {"tweets": Post.objects.own_tweets(account)}, request)
+    return render_to_string(
+        "core/_tweet_list.html", {"tweets": Post.objects.own_tweets(account)}, request
+    )
 
 
 def _replies_html(request, account):
-    return render_to_string("core/_reply_list.html", {"threads": Post.objects.reply_threads(account)}, request)
+    return render_to_string(
+        "core/_reply_list.html",
+        {"threads": Post.objects.reply_threads(account)},
+        request,
+    )
 
 
 # ---------- API ----------
@@ -138,7 +147,9 @@ def _expected_origin():
 
 def x_connect(request):
     if not x_api.is_configured():
-        request.session["flash"] = ".env に X_CLIENT_ID と X_CLIENT_SECRET を設定してください。"
+        request.session["flash"] = (
+            ".env に X_CLIENT_ID と X_CLIENT_SECRET を設定してください。"
+        )
         return redirect("core:tweets")
     # Xから戻ってくるのは登録したアドレス。別のアドレス (localhost など) で始めると、
     # ブラウザの記録が引き継がれず、戻ったときに必ず失敗する。始める前に止める。
@@ -156,7 +167,9 @@ def x_connect(request):
 
 def _callback_failed(request, reason, message):
     """失敗の理由をログに残し (秘密情報は含めない)、画面には原因に合った案内を出す。"""
-    logger.warning("X connect callback failed: %s (host=%s)", reason, request.get_host())
+    logger.warning(
+        "X connect callback failed: %s (host=%s)", reason, request.get_host()
+    )
     request.session["flash"] = message
     return redirect("core:tweets")
 
@@ -165,7 +178,9 @@ def x_callback(request):
     saved = request.session.pop("x_oauth", None)
     if request.GET.get("error"):
         return _callback_failed(
-            request, f"x returned error={request.GET.get('error')}", "Xとの連携がキャンセルされました。"
+            request,
+            f"x returned error={request.GET.get('error')}",
+            "Xとの連携がキャンセルされました。",
         )
     if not saved:
         return _callback_failed(
@@ -175,7 +190,11 @@ def x_callback(request):
             "歯車の「Xアカウントを追加」からやり直してください (戻るボタンや再読み込みは使わないでください)。",
         )
     if not request.GET.get("code"):
-        return _callback_failed(request, "no code in callback", "Xから認可コードが届きませんでした。もう一度お試しください。")
+        return _callback_failed(
+            request,
+            "no code in callback",
+            "Xから認可コードが届きませんでした。もう一度お試しください。",
+        )
     if not secrets.compare_digest(saved["state"], request.GET.get("state", "")):
         return _callback_failed(
             request,

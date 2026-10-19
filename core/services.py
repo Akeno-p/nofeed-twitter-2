@@ -2,6 +2,7 @@
 
 import re
 from decimal import Decimal
+
 from django.conf import settings
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -23,7 +24,9 @@ PAGE_SIZE = 100  # 1ページあたりの最大取得件数 (X の上限)
 # Developer Console でアプリを作ったアカウント本人だけ。それ以外のアカウントは通常の読み取り料金になる。
 PRICE_OWNED_READ = Decimal("0.001")  # Owned Reads (1件あたり)
 PRICE_READ = Decimal("0.005")  # 通常の読み取り (1件あたり)
-LEADING_MENTIONS = re.compile(r"^(?:@\w+(?:\s+|$))+")  # 「@id 本文」「@id」(画像だけの返信) の両方
+LEADING_MENTIONS = re.compile(
+    r"^(?:@\w+(?:\s+|$))+"
+)  # 「@id 本文」「@id」(画像だけの返信) の両方
 TRAILING_TCO = re.compile(r"\s*https://t\.co/\w+\s*$")
 MEDIA_PAGE = re.compile(r"/(?:photo|video)/\d+$")
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
@@ -42,7 +45,16 @@ def tweet_weight(text):
     weight = 0
     for ch in text:
         cp = ord(ch)
-        weight += 1 if (cp <= 4351 or 8192 <= cp <= 8205 or 8208 <= cp <= 8223 or 8242 <= cp <= 8247) else 2
+        weight += (
+            1
+            if (
+                cp <= 4351
+                or 8192 <= cp <= 8205
+                or 8208 <= cp <= 8223
+                or 8242 <= cp <= 8247
+            )
+            else 2
+        )
     return weight
 
 
@@ -59,10 +71,14 @@ def validate_text(text, has_images):
 
 def validate_images(files):
     if len(files) > settings.TWEET_MAX_IMAGES:
-        raise ValidationError(f"画像は{settings.TWEET_MAX_IMAGES}枚までです", field="images")
+        raise ValidationError(
+            f"画像は{settings.TWEET_MAX_IMAGES}枚までです", field="images"
+        )
     for f in files:
         if f.content_type not in ALLOWED_IMAGE_TYPES:
-            raise ValidationError("画像は JPEG / PNG / GIF / WebP のみ添付できます", field="images")
+            raise ValidationError(
+                "画像は JPEG / PNG / GIF / WebP のみ添付できます", field="images"
+            )
         if f.size > settings.TWEET_IMAGE_MAX_BYTES:
             raise ValidationError("画像は1枚あたり5MBまでです", field="images")
     if any(f.content_type == "image/gif" for f in files) and len(files) > 1:
@@ -134,7 +150,11 @@ def save_posts(account, payload):
         author = users.get(item.get("author_id"), {})
         is_mine = item.get("author_id") == account.x_user_id
         parent = next(
-            (r["id"] for r in item.get("referenced_tweets", []) if r["type"] == "replied_to"),
+            (
+                r["id"]
+                for r in item.get("referenced_tweets", [])
+                if r["type"] == "replied_to"
+            ),
             None,
         )
         text = strip_media_urls(item)
@@ -145,11 +165,15 @@ def save_posts(account, payload):
             x_id=item["id"],
             defaults={
                 "text": text,
-                "posted_at": parse_datetime(item["created_at"]) if "created_at" in item else timezone.now(),
+                "posted_at": parse_datetime(item["created_at"])
+                if "created_at" in item
+                else timezone.now(),
                 "author_x_id": item.get("author_id", ""),
-                "author_username": author.get("username") or (account.username if is_mine else ""),
+                "author_username": author.get("username")
+                or (account.username if is_mine else ""),
                 "author_name": author.get("name") or (account.name if is_mine else ""),
-                "author_avatar": author.get("profile_image_url") or (account.profile_image_url if is_mine else ""),
+                "author_avatar": author.get("profile_image_url")
+                or (account.profile_image_url if is_mine else ""),
                 "is_mine": is_mine,
                 "in_reply_to_x_id": parent,
                 "media_urls": _media_urls(item, media_by_key),
@@ -222,7 +246,11 @@ def _upload_image(account, f):
         "POST",
         "/media/upload",
         files={"media": (f.name, f.read(), f.content_type)},
-        data={"media_category": "tweet_gif" if f.content_type == "image/gif" else "tweet_image"},
+        data={
+            "media_category": "tweet_gif"
+            if f.content_type == "image/gif"
+            else "tweet_image"
+        },
     )
     return payload["data"]["id"]
 
@@ -239,7 +267,9 @@ def post_tweet(account, text, images=(), reply_to=None):
 
     if media_ids:
         # 作成のレスポンスには画像のURLが入っていないので、取り直して保存する
-        payload = x_api.request(account, "GET", f"/tweets/{created['id']}", params=TWEET_PARAMS)
+        payload = x_api.request(
+            account, "GET", f"/tweets/{created['id']}", params=TWEET_PARAMS
+        )
         save_posts(account, payload)
     else:
         save_posts(
@@ -251,7 +281,9 @@ def post_tweet(account, text, images=(), reply_to=None):
                         "text": created.get("text", text),
                         "author_id": account.x_user_id,
                         "created_at": timezone.now().isoformat(),
-                        "referenced_tweets": [{"type": "replied_to", "id": reply_to}] if reply_to else [],
+                        "referenced_tweets": [{"type": "replied_to", "id": reply_to}]
+                        if reply_to
+                        else [],
                     }
                 ]
             },

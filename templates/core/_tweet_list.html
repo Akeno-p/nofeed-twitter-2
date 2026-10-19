@@ -1,13 +1,27 @@
+<!-- prettier-ignore -->
 {% load core_tags %}
+<!-- prettier-ignore -->
 {% for post in tweets %}
-  <article class="flex gap-3.5 border-b border-slate-200 px-7 py-5">
-    {% include "core/_avatar.html" with url=post.author_avatar size="size-12" %}
-    <div class="min-w-0 flex-1">
-      {% include "core/_post_header.html" %}
-      {% if post.text %}<p class="mt-1 whitespace-pre-wrap break-words text-lg text-slate-700">{{ post.text }}</p>{% endif %}
-      {% include "core/_media.html" %}
-    </div>
-  </article>
+<article class="flex gap-3.5 border-b border-slate-200 px-7 py-5">
+  <!-- prettier-ignore -->
+  {% include "core/_avatar.html" with url=post.author_avatar size="size-12" %}
+  <div class="min-w-0 flex-1">
+    <!-- prettier-ignore -->
+    {% include "core/_post_header.html" %}
+    <!-- prettier-ignore -->
+    {% if post.text %}
+    <!-- prettier-ignore -->
+    <p class="mt-1 whitespace-pre-wrap break-words text-lg text-slate-700">{{ post.text }}</p>
+    <!-- prettier-ignore -->
+    {% endif %}
+    <!-- prettier-ignore -->
+    {% include "core/_media.html" %}
+  </div>
+</article>
+<!-- prettier-ignore -->
 {% empty %}
-  <p class="px-7 py-20 text-center text-base text-slate-500">まだツイートがありません。「ツイート取得」でXから読み込めます。</p>
+<p class="px-7 py-20 text-center text-base text-slate-500">
+  まだツイートがありません。「ツイート取得」でXから読み込めます。
+</p>
+<!-- prettier-ignore -->
 {% endfor %}

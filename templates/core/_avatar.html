@@ -1,10 +1,17 @@
-{% load core_tags %}{% if url %}<img
+<!-- prettier-ignore -->
+{% load core_tags %}
+<!-- prettier-ignore -->
+{% if url %}
+<img
   src="{{ url }}"
   alt=""
   class="{{ size }} shrink-0 rounded-full bg-slate-200 object-cover"
   loading="lazy"
   referrerpolicy="no-referrer"
-/>{% else %}<span
+/>
+<!-- prettier-ignore -->
+{% else %}
+<span
   class="{{ size }} flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-slate-400"
   aria-hidden="true"
   ><svg
@@ -13,5 +20,7 @@
     class="size-[75%] translate-y-[12%]"
   >
     <circle cx="12" cy="8" r="4.5" />
-    <path d="M3 22c0-5 4-8 9-8s9 3 9 8z" /></svg></span
->{% endif %}
+    <path d="M3 22c0-5 4-8 9-8s9 3 9 8z" /></svg
+></span>
+<!-- prettier-ignore -->
+{% endif %}

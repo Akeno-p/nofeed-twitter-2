@@ -18,7 +18,9 @@ class AuthFlowTests(TestCase):
         self.user = User.objects.create_user("owner", password="correct-horse-1")
 
     def login(self, password="correct-horse-1", username="owner"):
-        return self.client.post(reverse("accounts:login"), {"username": username, "password": password})
+        return self.client.post(
+            reverse("accounts:login"), {"username": username, "password": password}
+        )
 
     def otp(self, code):
         return self.client.post(reverse("accounts:two_factor"), {"code": code})
@@ -36,16 +38,24 @@ class AuthFlowTests(TestCase):
     def test_anonymous_is_sent_to_login(self):
         for name in ("core:tweets", "core:replies"):
             resp = self.client.get(reverse(name))
-            self.assertRedirects(resp, reverse("accounts:login"), fetch_redirect_response=False)
+            self.assertRedirects(
+                resp, reverse("accounts:login"), fetch_redirect_response=False
+            )
 
     def test_anonymous_api_gets_403_json(self):
         resp = self.client.post(
-            reverse("core:create_tweet"), {"text": "x"}, headers={"x-requested-with": "XMLHttpRequest"}
+            reverse("core:create_tweet"),
+            {"text": "x"},
+            headers={"x-requested-with": "XMLHttpRequest"},
         )
         self.assertEqual(resp.status_code, 403)
 
     def test_wrong_password(self):
-        self.assertFails(self.login("nope"), "ユーザー名またはパスワードが間違っています", ["username", "password"])
+        self.assertFails(
+            self.login("nope"),
+            "ユーザー名またはパスワードが間違っています",
+            ["username", "password"],
+        )
 
     def test_password_is_never_stored_in_the_session(self):
         self.login("wrong-password-xyz")
@@ -64,24 +74,36 @@ class AuthFlowTests(TestCase):
             cache.clear()
             for _ in range(5):
                 self.login("x", username=name)
-            self.assertFails(self.login("x", username=name), LOCKED_MESSAGE, [])  # 入力欄は赤くしない
+            self.assertFails(
+                self.login("x", username=name), LOCKED_MESSAGE, []
+            )  # 入力欄は赤くしない
 
     def test_empty_username_marks_only_username(self):
-        self.assertFails(self.login("something", username=""), "ユーザー名が空欄です", ["username"])
+        self.assertFails(
+            self.login("something", username=""), "ユーザー名が空欄です", ["username"]
+        )
 
     def test_empty_password_marks_only_password(self):
         self.assertFails(self.login(""), "パスワードが空欄です", ["password"])
 
     def test_both_empty_marks_both(self):
-        self.assertFails(self.login("", username=""), "ユーザー名とパスワードが空欄です", ["username", "password"])
+        self.assertFails(
+            self.login("", username=""),
+            "ユーザー名とパスワードが空欄です",
+            ["username", "password"],
+        )
 
     def test_whitespace_only_username_counts_as_empty(self):
-        self.assertFails(self.login("x", username="   "), "ユーザー名が空欄です", ["username"])
+        self.assertFails(
+            self.login("x", username="   "), "ユーザー名が空欄です", ["username"]
+        )
 
     def test_empty_fields_do_not_count_toward_lockout(self):
         for _ in range(10):
             self.login("")
-        self.assertGoes(self.login(), "accounts:two_factor")  # 正しい資格情報ならそのまま進める
+        self.assertGoes(
+            self.login(), "accounts:two_factor"
+        )  # 正しい資格情報ならそのまま進める
 
     def test_empty_otp_code(self):
         self.login()
@@ -90,9 +112,13 @@ class AuthFlowTests(TestCase):
 
     def test_error_area_is_always_rendered_to_keep_layout_stable(self):
         """エラーがなくても文章の置き場があり、出現しても下の要素が動かない。"""
-        self.assertContains(self.client.get(reverse("accounts:login")), 'id="form-error"')
+        self.assertContains(
+            self.client.get(reverse("accounts:login")), 'id="form-error"'
+        )
         self.login()
-        self.assertContains(self.client.get(reverse("accounts:two_factor")), 'id="form-error"')
+        self.assertContains(
+            self.client.get(reverse("accounts:two_factor")), 'id="form-error"'
+        )
 
     def test_login_locks_after_repeated_failures(self):
         for _ in range(5):
@@ -103,7 +129,9 @@ class AuthFlowTests(TestCase):
     def test_password_alone_does_not_open_the_app(self):
         self.assertGoes(self.login(), "accounts:two_factor")
         resp = self.client.get(reverse("core:tweets"))
-        self.assertRedirects(resp, reverse("accounts:two_factor"), fetch_redirect_response=False)
+        self.assertRedirects(
+            resp, reverse("accounts:two_factor"), fetch_redirect_response=False
+        )
 
     def test_setup_shows_qr_then_code_confirms(self):
         self.login()
@@ -125,7 +153,9 @@ class AuthFlowTests(TestCase):
         self.assertFalse(self.client.session.get("two_factor_verified"))
 
     def test_same_code_cannot_be_reused(self):
-        device = TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
+        device = TotpDevice.objects.create(
+            user=self.user, secret=TotpDevice.new_secret(), confirmed=True
+        )
         code = pyotp.TOTP(device.secret).now()
         self.login()
         self.assertGoes(self.otp(code), "core:tweets")
@@ -134,20 +164,26 @@ class AuthFlowTests(TestCase):
         self.assertFails(self.otp(code), "認証コードが正しくありません", ["code"])
 
     def test_confirmed_device_shows_input_screen_not_qr(self):
-        TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
+        TotpDevice.objects.create(
+            user=self.user, secret=TotpDevice.new_secret(), confirmed=True
+        )
         self.login()
         resp = self.client.get(reverse("accounts:two_factor"))
         self.assertNotContains(resp, "<svg viewBox")
         self.assertContains(resp, "認証アプリに表示されている6桁")
 
     def test_code_with_hyphen_is_accepted(self):
-        device = TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
+        device = TotpDevice.objects.create(
+            user=self.user, secret=TotpDevice.new_secret(), confirmed=True
+        )
         code = pyotp.TOTP(device.secret).now()
         self.login()
         self.assertGoes(self.otp(f"{code[:3]}-{code[3:]}"), "core:tweets")
 
     def test_otp_locks_after_repeated_failures(self):
-        device = TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
+        device = TotpDevice.objects.create(
+            user=self.user, secret=TotpDevice.new_secret(), confirmed=True
+        )
         self.login()
         for _ in range(5):
             self.otp("111111")
@@ -172,17 +208,31 @@ class AdminAccessTests(TestCase):
 
     def test_anonymous_is_sent_to_login(self):
         resp = self.client.get("/admin/")
-        self.assertRedirects(resp, reverse("accounts:login"), fetch_redirect_response=False)
+        self.assertRedirects(
+            resp, reverse("accounts:login"), fetch_redirect_response=False
+        )
 
     def test_password_alone_does_not_open_admin(self):
-        self.client.post(reverse("accounts:login"), {"username": "owner", "password": "correct-horse-1"})
+        self.client.post(
+            reverse("accounts:login"),
+            {"username": "owner", "password": "correct-horse-1"},
+        )
         resp = self.client.get("/admin/")
-        self.assertRedirects(resp, reverse("accounts:two_factor"), fetch_redirect_response=False)
+        self.assertRedirects(
+            resp, reverse("accounts:two_factor"), fetch_redirect_response=False
+        )
 
     def test_admin_opens_after_two_factor(self):
-        device = TotpDevice.objects.create(user=self.admin, secret=TotpDevice.new_secret(), confirmed=True)
-        self.client.post(reverse("accounts:login"), {"username": "owner", "password": "correct-horse-1"})
-        self.client.post(reverse("accounts:two_factor"), {"code": pyotp.TOTP(device.secret).now()})
+        device = TotpDevice.objects.create(
+            user=self.admin, secret=TotpDevice.new_secret(), confirmed=True
+        )
+        self.client.post(
+            reverse("accounts:login"),
+            {"username": "owner", "password": "correct-horse-1"},
+        )
+        self.client.post(
+            reverse("accounts:two_factor"), {"code": pyotp.TOTP(device.secret).now()}
+        )
         self.assertEqual(self.client.get("/admin/").status_code, 200)
 
 
@@ -190,7 +240,9 @@ class Reset2faCommandTests(TestCase):
     def setUp(self):
         cache.clear()
         self.user = User.objects.create_user("owner", password="correct-horse-1")
-        self.device = TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
+        self.device = TotpDevice.objects.create(
+            user=self.user, secret=TotpDevice.new_secret(), confirmed=True
+        )
 
     def run_command(self, *args):
         from io import StringIO
@@ -205,7 +257,10 @@ class Reset2faCommandTests(TestCase):
         self.run_command()  # ユーザーが1人なので省略できる
         self.assertFalse(TotpDevice.objects.filter(user=self.user).exists())
 
-        self.client.post(reverse("accounts:login"), {"username": "owner", "password": "correct-horse-1"})
+        self.client.post(
+            reverse("accounts:login"),
+            {"username": "owner", "password": "correct-horse-1"},
+        )
         resp = self.client.get(reverse("accounts:two_factor"))
         self.assertContains(resp, "2段階認証 設定")
         self.assertContains(resp, "<svg")

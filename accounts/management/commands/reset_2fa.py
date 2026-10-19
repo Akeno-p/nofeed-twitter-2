@@ -30,14 +30,24 @@ class Command(BaseCommand):
         else:
             users = list(User.objects.all()[:2])
             if len(users) != 1:
-                raise CommandError("ユーザーが複数 (または0人) です。ユーザー名を指定してください。")
+                raise CommandError(
+                    "ユーザーが複数 (または0人) です。ユーザー名を指定してください。"
+                )
             user = users[0]
 
         deleted, _ = TotpDevice.objects.filter(user=user).delete()
 
         if deleted:
-            self.stdout.write(self.style.SUCCESS("2段階認証をリセットしました。次回ログイン時にQRコードの登録画面が出ます。"))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "2段階認証をリセットしました。次回ログイン時にQRコードの登録画面が出ます。"
+                )
+            )
         else:
-            self.stdout.write("2段階認証は未登録でした。次回ログイン時にQRコードの登録画面が出ます。")
+            self.stdout.write(
+                "2段階認証は未登録でした。次回ログイン時にQRコードの登録画面が出ます。"
+            )
         # 失敗回数のロックは、起動中のサーバーのメモリにある。このコマンドは別のプロセスで動くので消せない。
-        self.stdout.write("失敗が続いてロックされている場合は、サーバーを再起動すると解除されます (5分待っても解除されます)。")
+        self.stdout.write(
+            "失敗が続いてロックされている場合は、サーバーを再起動すると解除されます (5分待っても解除されます)。"
+        )

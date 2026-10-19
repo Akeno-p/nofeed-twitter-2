@@ -1,13 +1,29 @@
+<!-- prettier-ignore -->
 {% load core_tags %}
+<!-- prettier-ignore -->
 {% if post.media_urls %}
-<ul class="js-gallery mt-2.5 grid max-w-96 gap-1.5 overflow-hidden rounded-2xl {% if post.media_urls|length > 1 %}grid-cols-2{% endif %}">
+<ul
+  class="js-gallery mt-2.5 grid max-w-96 gap-1.5 overflow-hidden rounded-2xl {% if post.media_urls|length > 1 %}grid-cols-2{% endif %}"
+>
+  <!-- prettier-ignore -->
   {% for url in post.media_urls %}
-    <li>
-      <button type="button" class="js-zoom block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500" aria-label="画像 {{ forloop.counter }} を拡大">
-        <img src="{{ url }}" alt="添付画像 {{ forloop.counter }}" loading="lazy" referrerpolicy="no-referrer"
-             class="h-full w-full bg-slate-200 object-cover {% if post.media_urls|length == 1 %}max-h-96{% else %}aspect-square{% endif %}">
-      </button>
-    </li>
+  <li>
+    <button
+      type="button"
+      class="js-zoom block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
+      aria-label="画像 {{ forloop.counter }} を拡大"
+    >
+      <img
+        src="{{ url }}"
+        alt="添付画像 {{ forloop.counter }}"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        class="h-full w-full bg-slate-200 object-cover {% if post.media_urls|length == 1 %}max-h-96{% else %}aspect-square{% endif %}"
+      />
+    </button>
+  </li>
+  <!-- prettier-ignore -->
   {% endfor %}
 </ul>
+<!-- prettier-ignore -->
 {% endif %}

@@ -21,7 +21,9 @@ def icon(name, css="size-5"):
         svg = svg[svg.index("<svg") :]
         svg = svg.replace('width="24"', "").replace('height="24"', "")
         _cache[name] = svg
-    svg = _cache[name].replace("<svg", f'<svg aria-hidden="true" class="shrink-0 {css}"', 1)
+    svg = _cache[name].replace(
+        "<svg", f'<svg aria-hidden="true" class="shrink-0 {css}"', 1
+    )
     # lucide の元の class 属性は重複するので外す
     svg = re.sub(r'\sclass="lucide[^"]*"', "", svg, count=1)
     return mark_safe(svg)

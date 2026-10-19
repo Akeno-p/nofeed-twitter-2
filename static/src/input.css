@@ -3,6 +3,7 @@
 @source "../../templates";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Hiragino Sans",
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Hiragino Sans",
     "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
 }
