@@ -19,7 +19,7 @@ $(function () {
     $banner.empty().append($("<span>").text(msg));
     if (reconnect) {
       $banner.append(
-        $("<a>").attr("href", "/x/connect/").addClass("ml-2 underline").text("連携し直す")
+        $("<a>").attr("href", "/x/connect/").addClass("ml-2.5 underline").text("連携し直す")
       );
     }
     $banner.removeClass("hidden").addClass("flex");
@@ -53,9 +53,9 @@ $(function () {
     $t.removeClass(Object.values(TOAST_COLORS).join(" "))
       .addClass(TOAST_COLORS[kind])
       .text(text)
-      .removeClass("translate-y-3 opacity-0");
+      .removeClass("translate-y-3.5 opacity-0");
     toastTimer = setTimeout(function () {
-      $t.addClass("translate-y-3 opacity-0");
+      $t.addClass("translate-y-3.5 opacity-0");
     }, 2500);
   }
 
@@ -268,12 +268,12 @@ $(function () {
         .append(
           $("<img>")
             .attr({ src: url, alt: "添付画像 " + (i + 1) })
-            .addClass("size-30 rounded-lg object-cover")
+            .addClass("size-32 rounded-lg object-cover")
         )
         .appendTo($li);
       $("<button>")
         .attr({ type: "button", "aria-label": "画像 " + (i + 1) + " を外す" })
-        .addClass("absolute -right-1.5 -top-1.5 flex size-5 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-xs text-white")
+        .addClass("absolute -right-2 -top-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-sm text-white")
         .text("×")
         .on("click", function () {
           files.splice(i, 1);

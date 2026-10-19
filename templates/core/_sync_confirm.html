@@ -1,16 +1,16 @@
 {% load core_tags %}
 {# 取得ボタンを押したときの確認。「取得」を押すまで、Xには何も送らない。外側クリックか Esc で閉じる #}
 <dialog id="sync-confirm-dialog" tabindex="-1" autofocus aria-labelledby="sync-confirm-title"
-        class="m-auto w-[min(92vw,26rem)] rounded-2xl border border-slate-200 bg-slate-50 p-0 text-slate-700 shadow-xl backdrop:bg-slate-900/40 focus:outline-none">
-  <div class="px-6 pb-3 pt-6">
-    <h2 id="sync-confirm-title" class="text-lg font-bold">{{ title }}</h2>
-    <p class="mt-2 text-slate-600">1件あたり約{{ unit_price }}かかります。</p>
+        class="m-auto w-11/12 max-w-lg rounded-2xl border border-slate-200 bg-slate-50 p-0 text-slate-700 shadow-xl backdrop:bg-slate-900/40 focus:outline-none">
+  <div class="px-7 pb-3.5 pt-7">
+    <h2 id="sync-confirm-title" class="text-xl font-bold">{{ title }}</h2>
+    <p class="mt-2.5 text-lg text-slate-600">1件あたり約{{ unit_price }}かかります。</p>
     {# 安い料金 (Owned Reads) は、Developer Console でアプリを作ったアカウントだけが対象。複数連携しているときだけ補足する #}
     {% if x_accounts|length > 1 %}
-      <p class="mt-1 text-sm text-slate-500">アプリを作ったアカウント以外は約{{ non_owner_unit_price }}です。</p>
+      <p class="mt-1.5 text-base text-slate-500">アプリを作ったアカウント以外は約{{ non_owner_unit_price }}です。</p>
     {% endif %}
   </div>
-  <div class="flex justify-end px-6 pb-6 pt-2">
-    <button type="button" data-sync-confirm class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "list-end" "size-5" %}取得</button>
+  <div class="flex justify-end px-7 pb-7 pt-2.5">
+    <button type="button" data-sync-confirm class="inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "list-end" "size-6" %}取得</button>
   </div>
 </dialog>
