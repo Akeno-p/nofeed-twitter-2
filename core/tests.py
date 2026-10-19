@@ -361,11 +361,6 @@ class ConnectTests(LoggedInTestCase):
         a.refresh_from_db()
         self.assertTrue(a.is_active)  # 残りのアカウントが自動で使用中になる
 
-    def test_switch_rejects_external_redirect(self):
-        a = make_account("1", "a", active=False)
-        resp = self.client.post(reverse("core:x_switch", args=[a.pk]), {"next": "https://evil.example/"})
-        self.assertRedirects(resp, reverse("core:tweets"), fetch_redirect_response=False)
-
     def test_settings_menu_and_pages_render(self):
         make_account("1", "alice")
         html = self.client.get(reverse("core:tweets")).content.decode()
@@ -850,9 +845,9 @@ class ReplyWithImageTests(LoggedInTestCase):
 
     def test_reply_form_has_image_controls(self):
         html = self.client.get(reverse("core:replies")).content.decode()
-        form = html[html.index('<form class="js-reply-form'):]
-        form = form[:form.index("</form>")]
-        for needle in ('enctype="multipart/form-data"', "js-compose-file", "js-add-image", "js-previews", "js-gallery"):
+        form = html[html.index('<div class="js-reply-form'):]
+        form = form[:form.index("js-form-error")]
+        for needle in ("js-compose-file", "js-add-image", "js-previews", "js-gallery"):
             self.assertIn(needle, form)
 
     def test_leading_mention_only_text_is_stripped(self):
@@ -881,8 +876,8 @@ class ReplyBoxLayoutTests(LoggedInTestCase):
         Post.objects.create(account=acc, x_id="2", text="r", posted_at=timezone.now(), author_x_id="2",
                             author_username="sub", author_name="s", is_mine=False, in_reply_to_x_id=mine.x_id)
         html = self.client.get(reverse("core:replies")).content.decode()
-        form = html[html.index('<form class="js-reply-form'):]
-        form = form[:form.index("</form>")]
+        form = html[html.index('<div class="js-reply-form'):]
+        form = form[:form.index("js-form-error")]
         box = form.index("js-compose-box")
         textarea = form.index("<textarea", box)
         previews = form.index("js-previews", box)

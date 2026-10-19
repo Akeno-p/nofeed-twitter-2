@@ -40,8 +40,7 @@
           <button type="button" class="js-reply-toggle inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-base text-slate-500 hover:bg-slate-100 hover:text-slate-700" aria-expanded="false">
             {% icon "undo-2" "size-5" %}返信する
           </button>
-          <form class="js-reply-form mt-2.5 hidden" action="{% url 'core:create_reply' %}" enctype="multipart/form-data" novalidate>
-            <input type="hidden" name="reply_to" value="{{ r.x_id }}">
+          <div class="js-reply-form mt-2.5 hidden" data-url="{% url 'core:create_reply' %}" data-reply-to="{{ r.x_id }}">
             {# 枠線は外側の箱に付け、本文欄と添付画像のプレビューを、その内側に並べる #}
             <div class="js-compose-box rounded-lg border-2 border-slate-300 bg-white transition-colors focus-within:border-slate-500 has-[[aria-invalid=true]]:border-red-500">
               <label for="reply-{{ r.x_id }}" class="sr-only">@{{ r.author_username }} への返信</label>
@@ -55,10 +54,10 @@
                 {% icon "image" "size-6" %}<span class="sr-only">画像を添付</span>
               </label>
               <span class="js-count text-base text-slate-500" aria-live="polite">0/{{ tweet_max_length }}</span>
-              <button type="submit" class="js-compose-submit inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-2.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-5" %}返信</button>
+              <button type="button" class="js-compose-submit inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-2.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-5" %}返信</button>
             </div>
             <p class="js-form-error mt-2.5 hidden text-right text-base text-red-600" role="alert"></p>
-          </form>
+          </div>
         </div>
       </div>
     </div>

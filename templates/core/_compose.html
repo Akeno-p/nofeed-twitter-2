@@ -1,6 +1,6 @@
 {% load core_tags %}
 {# 投稿フォーム。fid はページ内で重複しないようにするための接頭辞 #}
-<form class="js-compose" action="{% url 'core:create_tweet' %}" enctype="multipart/form-data" novalidate>
+<div class="js-compose" data-url="{% url 'core:create_tweet' %}">
   <div class="flex gap-3.5">
     {% include "core/_avatar.html" with url=x_account.profile_image_url size="size-12" %}
     <div class="min-w-0 flex-1">
@@ -17,9 +17,9 @@
           {% icon "image" "size-7" %}<span class="sr-only">画像を添付</span>
         </label>
         <span class="js-count ml-auto mr-3.5 text-base text-slate-500" aria-live="polite">0/{{ tweet_max_length }}</span>
-        <button type="submit" class="js-compose-submit inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-6" %}ツイート</button>
+        <button type="button" class="js-compose-submit inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-3.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-6" %}ツイート</button>
       </div>
       <p class="js-form-error mt-2.5 hidden text-base text-red-600" role="alert"></p>
     </div>
   </div>
-</form>
+</div>

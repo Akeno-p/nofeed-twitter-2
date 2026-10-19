@@ -1,6 +1,7 @@
 // nofeed-twitter のフロント処理 (jQuery)
 $(function () {
   const MAX_IMAGES = 4;
+  const COMPOSE = ".js-compose, .js-reply-form"; // 投稿欄と返信欄の外側の箱
 
   // ---- CSRF: すべての POST にトークンを付ける ----
   const csrf = $('meta[name="csrf-token"]').attr("content");
@@ -161,9 +162,55 @@ $(function () {
     if (!document.hidden) updateTimes(); // 別のタブから戻ったら、すぐ最新にする
   });
 
-  // ---- 確認ダイアログ付きフォーム ----
-  $(document).on("submit", "form[data-confirm]", function (e) {
-    if (!window.confirm($(this).data("confirm"))) e.preventDefault();
+  // ---- ログイン・2段階認証 ----
+  // 成功したら、サーバーが返した redirect の画面へ移る。失敗したら理由を出し、該当の入力欄を赤くする。
+  function submitAuth($box) {
+    const $submit = $box.find(".js-auth-submit");
+    const $inputs = $box.find("input[name]");
+    const data = {};
+    $inputs.each(function () { data[this.name] = this.value; });
+    $submit.prop("disabled", true);
+    $.post($box.attr("data-url"), data)
+      .done(function (res) {
+        location.href = res.redirect; // 移るまでボタンは押せないままにする
+      })
+      .fail(function (xhr) {
+        const body = xhr.responseJSON || {};
+        $inputs.removeAttr("aria-invalid aria-describedby");
+        (body.fields || []).forEach(function (name) {
+          $inputs.filter('[name="' + name + '"]').attr({ "aria-invalid": "true", "aria-describedby": "form-error" });
+        });
+        $box.find("#form-error").text(body.error || "通信に失敗しました。もう一度お試しください。");
+        $submit.prop("disabled", false);
+      });
+  }
+  $(document).on("click", ".js-auth-submit", function () {
+    submitAuth($(this).closest(".js-auth"));
+  });
+  $(document).on("keydown", ".js-auth input", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitAuth($(this).closest(".js-auth"));
+    }
+  });
+
+  // ---- ログアウト ----
+  $(document).on("click", ".js-logout", function () {
+    $.post($(this).attr("data-url")).done(function (res) {
+      location.href = res.redirect;
+    });
+  });
+
+  // ---- Xアカウントの切り替え・連携の削除 (終わったら今の画面を読み込み直す) ----
+  $(document).on("click", ".js-x-switch, .js-x-disconnect", function () {
+    const message = $(this).attr("data-confirm");
+    if (message && !window.confirm(message)) return;
+    $.post($(this).attr("data-url"))
+      .done(function () { location.reload(); })
+      .fail(function (xhr) {
+        setMenu(false);
+        showError(errorOf(xhr)[0]);
+      });
   });
 
   // ---- 設定メニュー (歯車) ----
@@ -222,18 +269,18 @@ $(function () {
     $form.find(".js-count").text(len + "/" + max).toggleClass("text-red-600", len >= max);
   }
   $(document).on("input", ".js-compose-text", function () {
-    updateCount($(this).closest("form"));
-    if ($(this).attr("aria-invalid")) clearFormError($(this).closest("form"));
+    updateCount($(this).closest(COMPOSE));
+    if ($(this).attr("aria-invalid")) clearFormError($(this).closest(COMPOSE));
   });
   $(document).on("keydown", ".js-compose-text", function (e) {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      $(this).closest("form").trigger("submit");
+      submitCompose($(this).closest(COMPOSE));
     }
   });
 
   // ---- 画像の選択とプレビュー ----
-  // form ごとに選んだファイルを配列で持つ (input の files は直接いじれないため)
+  // 投稿欄・返信欄ごとに選んだファイルを配列で持つ (input の files は直接いじれないため)
   const picked = new WeakMap();
   // 上限の枚数に達したら、画像の追加ボタンを押せなくする (外せば、また押せる)
   function updateAddImage($form, count) {
@@ -284,7 +331,7 @@ $(function () {
     });
   }
   $(document).on("change", ".js-compose-file", function () {
-    const $form = $(this).closest("form");
+    const $form = $(this).closest(COMPOSE);
     const files = picked.get($form[0]) || [];
     const incoming = Array.from(this.files);
     const room = MAX_IMAGES - files.length;
@@ -297,9 +344,7 @@ $(function () {
   });
 
   // ---- 投稿・返信の送信 ----
-  $(document).on("submit", ".js-compose, .js-reply-form", function (e) {
-    e.preventDefault();
-    const $form = $(this);
+  function submitCompose($form) {
     const $submit = $form.find(".js-compose-submit");
     const text = $form.find(".js-compose-text").val();
     const files = picked.get($form[0]) || [];
@@ -309,14 +354,16 @@ $(function () {
       return;
     }
 
-    const data = new FormData($form[0]);
+    const data = new FormData();
+    data.append("text", text);
+    if ($form.attr("data-reply-to")) data.append("reply_to", $form.attr("data-reply-to"));
     files.forEach(function (f) { data.append("images", f); });
 
     clearError();
     clearFormError($form);
     $submit.prop("disabled", true);
     $.ajax({
-      url: $form.attr("action"),
+      url: $form.attr("data-url"),
       method: "POST",
       data: data,
       processData: false,
@@ -350,9 +397,12 @@ $(function () {
       .always(function () {
         $submit.prop("disabled", false);
       });
+  }
+  $(document).on("click", ".js-compose-submit", function () {
+    submitCompose($(this).closest(COMPOSE));
   });
 
-  // ---- 返信フォームの開閉 ----
+  // ---- 返信欄の開閉 ----
   $(document).on("click", ".js-reply-toggle", function () {
     const $form = $(this).siblings(".js-reply-form");
     const open = $form.hasClass("hidden");

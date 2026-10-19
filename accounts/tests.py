@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import TotpDevice
+from .views import LOCKED_MESSAGE
 
 User = get_user_model()
 
@@ -16,10 +17,21 @@ class AuthFlowTests(TestCase):
         cache.clear()
         self.user = User.objects.create_user("owner", password="correct-horse-1")
 
-    def login(self, password="correct-horse-1", **kwargs):
-        return self.client.post(
-            reverse("accounts:login"), {"username": "owner", "password": password}, **kwargs
-        )
+    def login(self, password="correct-horse-1", username="owner"):
+        return self.client.post(reverse("accounts:login"), {"username": username, "password": password})
+
+    def otp(self, code):
+        return self.client.post(reverse("accounts:two_factor"), {"code": code})
+
+    def assertGoes(self, resp, url_name):
+        """成功: JS が移る先の URL を JSON で返す。"""
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"redirect": reverse(url_name)})
+
+    def assertFails(self, resp, error, fields):
+        """失敗: 理由と、赤くする入力欄の名前を JSON で返す。"""
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"error": error, "fields": fields})
 
     def test_anonymous_is_sent_to_login(self):
         for name in ("core:tweets", "core:replies"):
@@ -33,108 +45,48 @@ class AuthFlowTests(TestCase):
         self.assertEqual(resp.status_code, 403)
 
     def test_wrong_password(self):
-        resp = self.login("nope", follow=True)
-        self.assertContains(resp, "ユーザー名またはパスワードが間違っています")
-
-    def test_failed_login_redirects_so_reload_does_not_resubmit(self):
-        """失敗結果を POST の応答として直接返すと、リロードで「フォーム再送信」になる。"""
-        resp = self.login("nope")
-        self.assertRedirects(resp, reverse("accounts:login"), fetch_redirect_response=False)
-
-        shown = self.client.get(reverse("accounts:login"))
-        self.assertContains(shown, "ユーザー名またはパスワードが間違っています")
-        self.assertContains(shown, 'value="owner"')  # ユーザー名は打ち直さなくて済む
-
-        reloaded = self.client.get(reverse("accounts:login"))  # = リロード
-        self.assertNotContains(reloaded, "間違っています")
-        self.assertNotContains(reloaded, 'aria-invalid="true"')
+        self.assertFails(self.login("nope"), "ユーザー名またはパスワードが間違っています", ["username", "password"])
 
     def test_password_is_never_stored_in_the_session(self):
         self.login("wrong-password-xyz")
         self.assertNotIn("wrong-password-xyz", str(dict(self.client.session)))
 
-    def test_failed_otp_redirects_and_message_disappears_on_reload(self):
-        self.login()
-        self.client.get(reverse("accounts:two_factor"))
-        resp = self.client.post(reverse("accounts:two_factor"), {"code": "000000"})
-        self.assertRedirects(resp, reverse("accounts:two_factor"), fetch_redirect_response=False)
-        self.assertContains(self.client.get(reverse("accounts:two_factor")), "認証コードが正しくありません")
-        self.assertNotContains(self.client.get(reverse("accounts:two_factor")), "正しくありません")
-
     def test_login_error_does_not_reveal_which_field_is_wrong(self):
-        """ユーザー名が違う場合も、パスワードだけが違う場合も、画面の出力は同じ。"""
-
-        def error_view(username, password):
-            html = self.client.post(
-                reverse("accounts:login"), {"username": username, "password": password}, follow=True
-            ).content.decode()
-            # 入力欄に戻されるユーザー名だけは入力した本人の文字列なので、比較から除く
-            return html.replace(f'value="{username}"', 'value=""')
-
+        """ユーザー名が違う場合も、パスワードだけが違う場合も、返す内容は同じ。"""
         cache.clear()
-        wrong_password = error_view("owner", "wrong-password")
+        wrong_password = self.login("wrong-password").json()
         cache.clear()
-        wrong_user = error_view("nobody", "wrong-password")
-        # CSRFトークンはリクエストごとに変わるので除く
-        import re
-
-        strip = lambda h: re.sub(r'(name="csrfmiddlewaretoken" value|name="csrf-token" content)="[^"]*"', "", h)
-        self.assertEqual(strip(wrong_password), strip(wrong_user))
-        # 両方の入力欄が赤くなり、文言は「または」で両方を指す
-        self.assertEqual(wrong_password.count('aria-invalid="true"'), 2)
-        self.assertIn("ユーザー名またはパスワードが間違っています", wrong_password)
+        wrong_user = self.login("wrong-password", username="nobody").json()
+        self.assertEqual(wrong_password, wrong_user)
 
     def test_login_lock_message_is_text_only_and_same_for_any_username(self):
         for name in ("owner", "nobody"):
             cache.clear()
             for _ in range(5):
-                self.client.post(reverse("accounts:login"), {"username": name, "password": "x"})
-            resp = self.client.post(
-                reverse("accounts:login"), {"username": name, "password": "x"}, follow=True
-            )
-            self.assertContains(resp, "しばらくお待ちください")
-            self.assertNotContains(resp, 'aria-invalid="true"')
-
-    def post_login_followed(self, username, password):
-        return self.client.post(
-            reverse("accounts:login"), {"username": username, "password": password}, follow=True
-        )
+                self.login("x", username=name)
+            self.assertFails(self.login("x", username=name), LOCKED_MESSAGE, [])  # 入力欄は赤くしない
 
     def test_empty_username_marks_only_username(self):
-        resp = self.post_login_followed("", "something")
-        self.assertContains(resp, "ユーザー名が空欄です")
-        html = resp.content.decode()
-        self.assertEqual(html.count('aria-invalid="true"'), 1)
-        self.assertRegex(html, r'id="username"[^>]*aria-invalid="true"')
+        self.assertFails(self.login("something", username=""), "ユーザー名が空欄です", ["username"])
 
     def test_empty_password_marks_only_password(self):
-        resp = self.post_login_followed("owner", "")
-        self.assertContains(resp, "パスワードが空欄です")
-        html = resp.content.decode()
-        self.assertEqual(html.count('aria-invalid="true"'), 1)
-        self.assertRegex(html, r'id="password"[^>]*aria-invalid="true"')
-        self.assertContains(resp, 'value="owner"')
+        self.assertFails(self.login(""), "パスワードが空欄です", ["password"])
 
     def test_both_empty_marks_both(self):
-        resp = self.post_login_followed("", "")
-        self.assertContains(resp, "ユーザー名とパスワードが空欄です")
-        self.assertEqual(resp.content.decode().count('aria-invalid="true"'), 2)
+        self.assertFails(self.login("", username=""), "ユーザー名とパスワードが空欄です", ["username", "password"])
 
     def test_whitespace_only_username_counts_as_empty(self):
-        self.assertContains(self.post_login_followed("   ", "x"), "ユーザー名が空欄です")
+        self.assertFails(self.login("x", username="   "), "ユーザー名が空欄です", ["username"])
 
     def test_empty_fields_do_not_count_toward_lockout(self):
         for _ in range(10):
-            self.post_login_followed("owner", "")
-        resp = self.login(follow=True)  # 正しい資格情報ならそのまま進める
-        self.assertRedirects(resp, reverse("accounts:two_factor"))
+            self.login("")
+        self.assertGoes(self.login(), "accounts:two_factor")  # 正しい資格情報ならそのまま進める
 
     def test_empty_otp_code(self):
         self.login()
         self.client.get(reverse("accounts:two_factor"))
-        resp = self.client.post(reverse("accounts:two_factor"), {"code": "  "}, follow=True)
-        self.assertContains(resp, "認証コードが空欄です")
-        self.assertContains(resp, 'aria-invalid="true"')
+        self.assertFails(self.otp("  "), "認証コードが空欄です", ["code"])
 
     def test_error_area_is_always_rendered_to_keep_layout_stable(self):
         """エラーがなくても文章の置き場があり、出現しても下の要素が動かない。"""
@@ -145,12 +97,11 @@ class AuthFlowTests(TestCase):
     def test_login_locks_after_repeated_failures(self):
         for _ in range(5):
             self.login("nope")
-        resp = self.login("correct-horse-1", follow=True)  # 正しくても拒否される
-        self.assertContains(resp, "しばらくお待ちください")
+        self.assertFails(self.login(), LOCKED_MESSAGE, [])  # 正しくても拒否される
         self.assertNotIn("_auth_user_id", self.client.session)
 
     def test_password_alone_does_not_open_the_app(self):
-        self.assertRedirects(self.login(), reverse("accounts:two_factor"), fetch_redirect_response=False)
+        self.assertGoes(self.login(), "accounts:two_factor")
         resp = self.client.get(reverse("core:tweets"))
         self.assertRedirects(resp, reverse("accounts:two_factor"), fetch_redirect_response=False)
 
@@ -162,9 +113,7 @@ class AuthFlowTests(TestCase):
 
         device = TotpDevice.objects.get(user=self.user)
         self.assertFalse(device.confirmed)
-        code = pyotp.TOTP(device.secret).now()
-        resp = self.client.post(reverse("accounts:two_factor"), {"code": code})
-        self.assertRedirects(resp, reverse("core:tweets"), fetch_redirect_response=False)
+        self.assertGoes(self.otp(pyotp.TOTP(device.secret).now()), "core:tweets")
         device.refresh_from_db()
         self.assertTrue(device.confirmed)
         self.assertEqual(self.client.get(reverse("core:tweets")).status_code, 200)
@@ -172,24 +121,17 @@ class AuthFlowTests(TestCase):
     def test_wrong_code_is_rejected(self):
         self.login()
         self.client.get(reverse("accounts:two_factor"))
-        resp = self.client.post(reverse("accounts:two_factor"), {"code": "000000"}, follow=True)
-        self.assertContains(resp, "認証コードが正しくありません")
-        self.assertContains(resp, 'aria-invalid="true"')
+        self.assertFails(self.otp("000000"), "認証コードが正しくありません", ["code"])
         self.assertFalse(self.client.session.get("two_factor_verified"))
 
     def test_same_code_cannot_be_reused(self):
         device = TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
         code = pyotp.TOTP(device.secret).now()
         self.login()
-        self.assertRedirects(
-            self.client.post(reverse("accounts:two_factor"), {"code": code}),
-            reverse("core:tweets"),
-            fetch_redirect_response=False,
-        )
+        self.assertGoes(self.otp(code), "core:tweets")
         self.client.post(reverse("accounts:logout"))
         self.login()
-        resp = self.client.post(reverse("accounts:two_factor"), {"code": code}, follow=True)
-        self.assertContains(resp, "認証コードが正しくありません")
+        self.assertFails(self.otp(code), "認証コードが正しくありません", ["code"])
 
     def test_confirmed_device_shows_input_screen_not_qr(self):
         TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
@@ -202,22 +144,23 @@ class AuthFlowTests(TestCase):
         device = TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
         code = pyotp.TOTP(device.secret).now()
         self.login()
-        resp = self.client.post(reverse("accounts:two_factor"), {"code": f"{code[:3]}-{code[3:]}"})
-        self.assertRedirects(resp, reverse("core:tweets"), fetch_redirect_response=False)
+        self.assertGoes(self.otp(f"{code[:3]}-{code[3:]}"), "core:tweets")
 
     def test_otp_locks_after_repeated_failures(self):
         device = TotpDevice.objects.create(user=self.user, secret=TotpDevice.new_secret(), confirmed=True)
         self.login()
         for _ in range(5):
-            self.client.post(reverse("accounts:two_factor"), {"code": "111111"})
-        resp = self.client.post(
-            reverse("accounts:two_factor"), {"code": pyotp.TOTP(device.secret).now()}, follow=True
-        )
-        self.assertContains(resp, "しばらくお待ちください")
+            self.otp("111111")
+        self.assertFails(self.otp(pyotp.TOTP(device.secret).now()), LOCKED_MESSAGE, [])
 
     def test_logout_requires_post(self):
         self.login()
         self.assertEqual(self.client.get(reverse("accounts:logout")).status_code, 405)
+
+    def test_logout_returns_login_url(self):
+        self.login()
+        self.assertGoes(self.client.post(reverse("accounts:logout")), "accounts:login")
+        self.assertNotIn("_auth_user_id", self.client.session)
 
 
 class Reset2faCommandTests(TestCase):

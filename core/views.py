@@ -7,7 +7,6 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from . import services, x_api
@@ -198,16 +197,15 @@ def x_callback(request):
 
 @require_POST
 def x_switch(request, pk):
+    """切り替えたあとは、JS が今の画面を読み込み直す。"""
     get_object_or_404(XAccount, pk=pk).activate()
-    next_url = request.POST.get("next", "")
-    if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
-        return redirect(next_url)
-    return redirect("core:tweets")
+    return JsonResponse({})
 
 
 @require_POST
 def x_disconnect(request, pk):
+    """削除したあとは、JS が今の画面を読み込み直す (メッセージはそこで出る)。"""
     account = get_object_or_404(XAccount, pk=pk)
     account.disconnect()
     request.session["flash"] = f"@{account.username} の連携を削除しました。"
-    return redirect("core:tweets")
+    return JsonResponse({})

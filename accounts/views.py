@@ -1,5 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
 from . import throttle
@@ -12,14 +14,14 @@ def _client_ip(request):
     return request.META.get("REMOTE_ADDR", "")
 
 
-def _fail_and_redirect(request, key, url_name, **state):
-    """失敗結果を1回だけ表示できるよう保存し、同じ画面へ GET で戻す。
+def _fail(error, fields):
+    """失敗の理由と、赤くする入力欄の名前を返す。"""
+    return JsonResponse({"error": error, "fields": fields}, status=400)
 
-    POST の結果をそのまま描画すると、リロードで「フォーム再送信」になってしまう。
-    パスワードやコードは保存しない。
-    """
-    request.session[key] = state
-    return redirect(url_name)
+
+def _go(url_name):
+    """成功。JS が redirect の URL へ画面を移す。"""
+    return JsonResponse({"redirect": reverse(url_name)})
 
 
 LOCKED_MESSAGE = "失敗が続いたため、しばらくお待ちください"  # 1行に収まる長さにする
@@ -51,44 +53,22 @@ def login_view(request):
                 ("username",): "ユーザー名が空欄です",
                 ("password",): "パスワードが空欄です",
             }.get(tuple(empty), "ユーザー名とパスワードが空欄です")
-            return _fail_and_redirect(
-                request, "login_flash", "accounts:login",
-                error=message, fields=empty, username=username,
-            )
+            return _fail(message, empty)
 
         ident = f"{_client_ip(request)}:{username.lower()}"
         if throttle.is_locked("login", ident):
-            return _fail_and_redirect(
-                request, "login_flash", "accounts:login",
-                error=LOCKED_MESSAGE,
-                fields=[],  # ロック中は入力欄を赤くしない
-                username=username,
-            )
+            return _fail(LOCKED_MESSAGE, [])  # ロック中は入力欄を赤くしない
         user = authenticate(request, username=username, password=password)
         if user is None:
             throttle.record_failure("login", ident)
             # どちらが違うのかは伝えない (ユーザー名の存在を推測されないため)
-            return _fail_and_redirect(
-                request, "login_flash", "accounts:login",
-                error="ユーザー名またはパスワードが間違っています",
-                fields=["username", "password"],
-                username=username,
-            )
+            return _fail("ユーザー名またはパスワードが間違っています", ["username", "password"])
         throttle.reset("login", ident)
         login(request, user)  # セッションIDは入れ替わる
         request.session[SESSION_KEY] = False
-        return redirect("accounts:two_factor")
+        return _go("accounts:two_factor")
 
-    flash = request.session.pop("login_flash", {})  # 1回見たら消える
-    return render(
-        request,
-        "accounts/login.html",
-        {
-            "error": flash.get("error"),
-            "invalid_fields": flash.get("fields", []),
-            "username": flash.get("username", ""),
-        },
-    )
+    return render(request, "accounts/login.html")
 
 
 @require_http_methods(["GET", "POST"])
@@ -107,36 +87,21 @@ def two_factor_view(request):
     if request.method == "POST":
         code = request.POST.get("code", "")
         if not code.strip():
-            return _fail_and_redirect(
-                request, "otp_flash", "accounts:two_factor",
-                error="認証コードが空欄です", fields=["code"],
-            )
+            return _fail("認証コードが空欄です", ["code"])
         ident = str(request.user.pk)
         if throttle.is_locked("otp", ident):
-            return _fail_and_redirect(
-                request, "otp_flash", "accounts:two_factor",
-                error=LOCKED_MESSAGE, fields=[],
-            )
+            return _fail(LOCKED_MESSAGE, [])
         if device.verify(code):
             throttle.reset("otp", ident)
             if setting_up:
                 device.confirmed = True
                 device.save(update_fields=["confirmed"])
             request.session[SESSION_KEY] = True
-            return redirect("core:tweets")
+            return _go("core:tweets")
         throttle.record_failure("otp", ident)
-        return _fail_and_redirect(
-            request, "otp_flash", "accounts:two_factor",
-            error="認証コードが正しくありません",
-            fields=["code"],
-        )
+        return _fail("認証コードが正しくありません", ["code"])
 
-    flash = request.session.pop("otp_flash", {})
-    context = {
-        "setting_up": setting_up,
-        "error": flash.get("error"),
-        "invalid_fields": flash.get("fields", []),
-    }
+    context = {"setting_up": setting_up}
     if setting_up:
         context["qr_svg"] = svg_data(device.provisioning_uri())
     return render(request, "accounts/two_factor.html", context)
@@ -145,4 +110,4 @@ def two_factor_view(request):
 @require_POST
 def logout_view(request):
     logout(request)
-    return redirect("accounts:login")
+    return _go("accounts:login")

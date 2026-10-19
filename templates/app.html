@@ -36,16 +36,12 @@
               {% if acc.is_active %}
                 <span class="flex items-center gap-1.5 text-sm text-slate-600">{% icon "check" "size-5" %}使用中</span>
               {% else %}
-                <form method="post" action="{% url 'core:x_switch' acc.pk %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.path }}">
-                  <button type="submit" class="rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-100">切り替え</button>
-                </form>
+                <button type="button" data-url="{% url 'core:x_switch' acc.pk %}"
+                        class="js-x-switch rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-100">切り替え</button>
               {% endif %}
-              <form method="post" action="{% url 'core:x_disconnect' acc.pk %}" data-confirm="@{{ acc.username }} の連携を削除します。保存しているツイートの記録も消えます (Xのツイート自体は消えません)。よろしいですか？">
-                {% csrf_token %}
-                <button type="submit" aria-label="@{{ acc.username }} の連携を削除" class="rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">{% icon "trash-2" "size-5" %}</button>
-              </form>
+              <button type="button" data-url="{% url 'core:x_disconnect' acc.pk %}" aria-label="@{{ acc.username }} の連携を削除"
+                      data-confirm="@{{ acc.username }} の連携を削除します。保存しているツイートの記録も消えます (Xのツイート自体は消えません)。よろしいですか？"
+                      class="js-x-disconnect rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">{% icon "trash-2" "size-5" %}</button>
             </li>
           {% empty %}
             <li class="px-2.5 py-1.5 text-base text-slate-500">連携しているアカウントはありません</li>
@@ -56,10 +52,10 @@
         {% else %}
           <p class="mt-2.5 px-2.5 text-sm text-amber-700">.env に X_CLIENT_ID / X_CLIENT_SECRET が未設定です</p>
         {% endif %}
-        <form method="post" action="{% url 'accounts:logout' %}" class="mt-2.5 border-t border-slate-200 pt-2.5">
-          {% csrf_token %}
-          <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "log-out" "size-5" %}ログアウト</button>
-        </form>
+        <div class="mt-2.5 border-t border-slate-200 pt-2.5">
+          <button type="button" data-url="{% url 'accounts:logout' %}"
+                  class="js-logout flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "log-out" "size-5" %}ログアウト</button>
+        </div>
       </div>
       <div class="flex items-center gap-3.5">
         {% if x_account %}
@@ -85,9 +81,7 @@
       <a href="{% url 'core:tweets' %}" class="rounded-lg px-3.5 py-2.5 text-base {% if nav == 'tweets' %}bg-slate-200 font-medium{% endif %}">ツイート</a>
       <a href="{% url 'core:replies' %}" class="rounded-lg px-3.5 py-2.5 text-base {% if nav == 'replies' %}bg-slate-200 font-medium{% endif %}">リプライ</a>
       <button type="button" class="ml-auto rounded-lg bg-slate-700 px-3.5 py-2.5 text-base text-white disabled:opacity-50" data-open-compose {% if not x_account %}disabled{% endif %}>ツイート</button>
-      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
-        <button type="submit" class="rounded-lg p-2.5 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-6" %}</button>
-      </form>
+      <button type="button" data-url="{% url 'accounts:logout' %}" class="js-logout rounded-lg p-2.5 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-6" %}</button>
     </nav>
 
     <main>

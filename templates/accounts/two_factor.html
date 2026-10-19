@@ -20,8 +20,8 @@
     <p class="mt-2 text-balance text-sm text-slate-600">認証アプリに表示されている6桁のコードを入力してください。</p>
   {% endif %}
 
-  <form method="post" class="mt-6 space-y-5 text-left" novalidate>
-    {% csrf_token %}
+  {# error / invalid_fields は、デザイン確認用ページ (dev_views) でエラー表示を見るときだけ渡される。通常は JS が出す #}
+  <div class="js-auth mt-6 space-y-5 text-left" data-url="{% url 'accounts:two_factor' %}">
     <div>
       {% if setting_up %}<label for="code" class="mb-2 block text-sm font-bold text-slate-600">認証コード</label>{% endif %}
       <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9 \-]*" maxlength="8"
@@ -30,15 +30,15 @@
              class="w-full rounded-lg border-2 border-slate-400 bg-white px-3 py-2.5 text-center tracking-widest text-slate-700 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 aria-invalid:border-red-500 aria-invalid:ring-2 aria-invalid:ring-red-200">
     </div>
     <div class="pt-3">
-      <button type="submit" class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "key-round" "size-5" %}認証</button>
+      <button type="button" class="js-auth-submit inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "key-round" "size-5" %}認証</button>
       <p id="form-error" role="alert" class="mt-3 min-h-5 text-center text-sm text-red-600">{{ error|default:"" }}</p>
     </div>
-  </form>
+  </div>
 
   {# 中央の列の中で、画面の一番下・右端に置く。文字の右端は入力欄の右端 (px-4) にそろえる #}
-  <form method="post" action="{% url 'accounts:logout' %}" class="absolute bottom-4 right-1">
-    {% csrf_token %}
-    <button type="submit" class="cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline">ログイン画面に戻る</button>
-  </form>
+  <div class="absolute bottom-4 right-1">
+    <button type="button" data-url="{% url 'accounts:logout' %}"
+            class="js-logout cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline">ログイン画面に戻る</button>
+  </div>
 </main>
 {% endblock %}
