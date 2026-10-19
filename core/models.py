@@ -1,4 +1,13 @@
-from django.db import models
+from django.db import models, transaction
+from django.db.models import Q
+
+from . import x_api
+
+
+class XAccountManager(models.Manager):
+    def active(self):
+        """画面に表示しているアカウント。連携が無ければ None。"""
+        return self.filter(is_active=True).first()
 
 
 class XAccount(models.Model):
@@ -17,11 +26,82 @@ class XAccount(models.Model):
     since_reply_id = models.CharField(max_length=32, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = XAccountManager()
+
     class Meta:
         ordering = ["created_at"]
 
     def __str__(self):
         return f"@{self.username}"
+
+    @classmethod
+    def connect(cls, me, token):
+        """連携したアカウントを作成 (連携済みなら更新) して、表示中にする。"""
+        with transaction.atomic():
+            account = cls.objects.filter(x_user_id=me["id"]).first() or cls(x_user_id=me["id"])
+            account.username = me["username"]
+            account.name = me["name"]
+            account.profile_image_url = me.get("profile_image_url", "")
+            x_api.apply_new_token(account, token)
+            cls.objects.update(is_active=False)
+            account.is_active = True
+            account.save()
+        return account
+
+    def activate(self):
+        """このアカウントを表示中にする。表示中のアカウントは常に1つだけ。"""
+        with transaction.atomic():
+            XAccount.objects.update(is_active=False)
+            self.is_active = True
+            self.save(update_fields=["is_active"])
+
+    def disconnect(self):
+        """連携を削除する。表示中だったら、残りのアカウントの先頭を表示中にする。"""
+        with transaction.atomic():
+            self.delete()  # 保存していたツイートも一緒に消える
+            if self.is_active:
+                nxt = XAccount.objects.first()
+                if nxt:
+                    nxt.is_active = True
+                    nxt.save(update_fields=["is_active"])
+
+
+class PostManager(models.Manager):
+    def my_post_ids(self, account):
+        return self.filter(account=account, is_mine=True).values("x_id")
+
+    def own_tweets(self, account):
+        """トップ画面用: 自分のツイート (他人への返信は除く)。"""
+        return (
+            self.filter(account=account, is_mine=True)
+            .filter(Q(in_reply_to_x_id__isnull=True) | Q(in_reply_to_x_id__in=self.my_post_ids(account)))
+            .order_by("-posted_at")[:200]
+        )
+
+    def replies_to_me(self, account):
+        """自分のツイートへ来た返信。"""
+        return self.filter(account=account, is_mine=False, in_reply_to_x_id__in=self.my_post_ids(account))
+
+    def reply_threads(self, account):
+        """リプライ画面用: 自分のツイートへ来た返信と、それへの自分の返事。"""
+        mine = {p.x_id: p for p in self.filter(account=account, is_mine=True)}
+        incoming = list(
+            self.filter(account=account, is_mine=False, in_reply_to_x_id__in=list(mine))
+            .order_by("-posted_at")[:200]
+        )
+        answers = {}
+        for p in sorted(
+            (p for p in mine.values() if p.in_reply_to_x_id), key=lambda p: p.posted_at
+        ):
+            answers.setdefault(p.in_reply_to_x_id, []).append(p)
+        return [
+            {"reply": r, "parent": mine[r.in_reply_to_x_id], "answers": answers.get(r.x_id, [])}
+            for r in incoming
+        ]
+
+    def prune_unrelated_replies(self, account):
+        """自分の投稿への返信でないもの (返信先が手元に無いもの) を消す。"""
+        self.filter(account=account, is_mine=False).exclude(in_reply_to_x_id__in=self.my_post_ids(account)).delete()
 
 
 class Post(models.Model):
@@ -41,6 +121,8 @@ class Post(models.Model):
     is_mine = models.BooleanField()
     in_reply_to_x_id = models.CharField(max_length=32, null=True, blank=True)
     media_urls = models.JSONField(default=list)
+
+    objects = PostManager()
 
     class Meta:
         constraints = [

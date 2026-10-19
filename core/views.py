@@ -4,8 +4,6 @@ from functools import wraps
 from urllib.parse import urlparse
 
 from django.conf import settings
-from django.db import transaction
-from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -19,10 +17,6 @@ from .models import Post, XAccount
 logger = logging.getLogger(__name__)
 
 
-def _active_account():
-    return XAccount.objects.filter(is_active=True).first()
-
-
 def _json_error(message, status=400, **extra):
     return JsonResponse({"error": message, **extra}, status=status)
 
@@ -32,7 +26,7 @@ def api_view(view):
 
     @wraps(view)
     def wrapper(request, *args, **kwargs):
-        account = _active_account()
+        account = XAccount.objects.active()
         if account is None:
             return _json_error("Xアカウントが連携されていません。", needs_reconnect=True)
         try:
@@ -43,40 +37,6 @@ def api_view(view):
             return _json_error(exc.message, status=502, needs_reconnect=exc.needs_reconnect)
 
     return wrapper
-
-
-# ---------- 一覧データ ----------
-
-
-def _my_post_ids(account):
-    return Post.objects.filter(account=account, is_mine=True).values("x_id")
-
-
-def own_tweets(account):
-    """トップ画面用: 自分のツイート (他人への返信は除く)。"""
-    return (
-        Post.objects.filter(account=account, is_mine=True)
-        .filter(Q(in_reply_to_x_id__isnull=True) | Q(in_reply_to_x_id__in=_my_post_ids(account)))
-        .order_by("-posted_at")[:200]
-    )
-
-
-def reply_threads(account):
-    """リプライ画面用: 自分のツイートへ来た返信と、それへの自分の返事。"""
-    mine = {p.x_id: p for p in Post.objects.filter(account=account, is_mine=True)}
-    incoming = list(
-        Post.objects.filter(account=account, is_mine=False, in_reply_to_x_id__in=list(mine))
-        .order_by("-posted_at")[:200]
-    )
-    answers = {}
-    for p in sorted(
-        (p for p in mine.values() if p.in_reply_to_x_id), key=lambda p: p.posted_at
-    ):
-        answers.setdefault(p.in_reply_to_x_id, []).append(p)
-    return [
-        {"reply": r, "parent": mine[r.in_reply_to_x_id], "answers": answers.get(r.x_id, [])}
-        for r in incoming
-    ]
 
 
 # ---------- ページ ----------
@@ -91,37 +51,37 @@ def _sync_prices():
 
 
 def tweets_page(request):
-    account = _active_account()
+    account = XAccount.objects.active()
     return render(
         request,
         "core/tweets.html",
         {
             "nav": "tweets",
-            "tweets": own_tweets(account) if account else [],
+            "tweets": Post.objects.own_tweets(account) if account else [],
             **_sync_prices(),
         },
     )
 
 
 def replies_page(request):
-    account = _active_account()
+    account = XAccount.objects.active()
     return render(
         request,
         "core/replies.html",
         {
             "nav": "replies",
-            "threads": reply_threads(account) if account else [],
+            "threads": Post.objects.reply_threads(account) if account else [],
             **_sync_prices(),
         },
     )
 
 
 def _tweets_html(request, account):
-    return render_to_string("core/_tweet_list.html", {"tweets": own_tweets(account)}, request)
+    return render_to_string("core/_tweet_list.html", {"tweets": Post.objects.own_tweets(account)}, request)
 
 
 def _replies_html(request, account):
-    return render_to_string("core/_reply_list.html", {"threads": reply_threads(account)}, request)
+    return render_to_string("core/_reply_list.html", {"threads": Post.objects.reply_threads(account)}, request)
 
 
 # ---------- API ----------
@@ -160,9 +120,7 @@ def create_tweet(request, account):
 def create_reply(request, account):
     reply_to = request.POST.get("reply_to", "")
     # 返信できるのは、自分のツイートへ来た返信だけ
-    target = get_object_or_404(
-        Post, account=account, x_id=reply_to, is_mine=False, in_reply_to_x_id__in=_my_post_ids(account)
-    )
+    target = get_object_or_404(Post.objects.replies_to_me(account), x_id=reply_to)
     images = request.FILES.getlist("images")
     services.validate_images(images)
     text = _validated_text(request, images)
@@ -233,26 +191,14 @@ def x_callback(request):
         request.session["flash"] = exc.message
         return redirect("core:tweets")
 
-    with transaction.atomic():
-        account = XAccount.objects.filter(x_user_id=me["id"]).first() or XAccount(x_user_id=me["id"])
-        account.username = me["username"]
-        account.name = me["name"]
-        account.profile_image_url = me.get("profile_image_url", "")
-        x_api.apply_new_token(account, token)
-        XAccount.objects.update(is_active=False)
-        account.is_active = True
-        account.save()
+    account = XAccount.connect(me, token)
     request.session["flash"] = f"@{account.username} を連携しました。"
     return redirect("core:tweets")
 
 
 @require_POST
 def x_switch(request, pk):
-    account = get_object_or_404(XAccount, pk=pk)
-    with transaction.atomic():
-        XAccount.objects.update(is_active=False)
-        account.is_active = True
-        account.save(update_fields=["is_active"])
+    get_object_or_404(XAccount, pk=pk).activate()
     next_url = request.POST.get("next", "")
     if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
         return redirect(next_url)
@@ -262,14 +208,6 @@ def x_switch(request, pk):
 @require_POST
 def x_disconnect(request, pk):
     account = get_object_or_404(XAccount, pk=pk)
-    was_active = account.is_active
-    username = account.username
-    with transaction.atomic():
-        account.delete()  # 保存していたツイートも一緒に消える
-        if was_active:
-            nxt = XAccount.objects.first()
-            if nxt:
-                nxt.is_active = True
-                nxt.save(update_fields=["is_active"])
-    request.session["flash"] = f"@{username} の連携を削除しました。"
+    account.disconnect()
+    request.session["flash"] = f"@{account.username} の連携を削除しました。"
     return redirect("core:tweets")

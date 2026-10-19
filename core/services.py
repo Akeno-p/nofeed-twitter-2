@@ -209,14 +209,8 @@ def sync_replies(account):
     if newest:
         account.since_reply_id = newest
         account.save(update_fields=["since_reply_id"])
-    _prune_unrelated_replies(account)
+    Post.objects.prune_unrelated_replies(account)
     return Post.objects.filter(account=account, is_mine=False).count() - before
-
-
-def _prune_unrelated_replies(account):
-    """自分の投稿への返信でないもの (返信先が手元に無いもの) を消す。"""
-    mine = Post.objects.filter(account=account, is_mine=True).values("x_id")
-    Post.objects.filter(account=account, is_mine=False).exclude(in_reply_to_x_id__in=mine).delete()
 
 
 # ---------- 投稿 ----------
