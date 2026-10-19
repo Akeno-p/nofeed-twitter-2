@@ -12,6 +12,53 @@
 <body class="min-h-screen bg-slate-50 text-slate-700 antialiased">
   {% block body %}{% endblock %}
   <script src="{% static 'vendor/jquery.min.js' %}"></script>
-  <script src="{% static 'js/app.js' %}"></script>
+  <script>
+    // 各画面の <script> は、この後の scripts ブロックに入る (画面の要素を読み込んだ後に動く)
+
+    // ---- CSRF: すべての POST にトークンを付ける ----
+    const csrf = $('meta[name="csrf-token"]').attr("content");
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS)$/i.test(settings.type)) {
+          xhr.setRequestHeader("X-CSRFToken", csrf);
+          xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        }
+      },
+    });
+
+    // ---- ログイン・2段階認証 (login.html / two_factor.html) ----
+    // 成功したら、サーバーが返した redirect の画面へ移る。失敗したら理由を出し、該当の入力欄を赤くする。
+    function submitAuth($box) {
+      const $submit = $box.find(".js-auth-submit");
+      const $inputs = $box.find("input[name]");
+      const data = {};
+      $inputs.each(function () { data[this.name] = this.value; });
+      $submit.prop("disabled", true);
+      $.post($box.attr("data-url"), data)
+        .done(function (res) {
+          location.href = res.redirect; // 移るまでボタンは押せないままにする
+        })
+        .fail(function (xhr) {
+          const body = xhr.responseJSON || {};
+          $inputs.removeAttr("aria-invalid aria-describedby");
+          (body.fields || []).forEach(function (name) {
+            $inputs.filter('[name="' + name + '"]').attr({ "aria-invalid": "true", "aria-describedby": "form-error" });
+          });
+          $box.find("#form-error").text(body.error || "通信に失敗しました。もう一度お試しください。");
+          $submit.prop("disabled", false);
+        });
+    }
+    $(document).on("click", ".js-auth-submit", function () {
+      submitAuth($(this).closest(".js-auth"));
+    });
+
+    // ---- ログアウト (two_factor.html / app.html) ----
+    $(document).on("click", ".js-logout", function () {
+      $.post($(this).attr("data-url")).done(function (res) {
+        location.href = res.redirect;
+      });
+    });
+  </script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

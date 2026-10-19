@@ -1,10 +1,11 @@
+import re
 from datetime import timedelta
 from unittest import mock
 
 import pyotp
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -36,6 +37,11 @@ def make_account(user_id=ME, username="me", active=True, **kw):
         is_active=active,
         **kw,
     )
+
+
+def without_scripts(html):
+    """画面の HTML から <script> を除く (JS のコードやコメントを、画面の文言として数えないため)。"""
+    return re.sub(r"<script>.*?</script>", "", html, flags=re.DOTALL)
 
 
 class LoggedInTestCase(TestCase):
@@ -313,7 +319,8 @@ class ConnectTests(LoggedInTestCase):
         self.assertIn("state", self.client.session["x_oauth"])
 
     def test_pkce_challenge_matches_verifier(self):
-        import base64, hashlib
+        import base64
+        import hashlib
         verifier, challenge = x_api.new_pkce()
         expected = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
         self.assertEqual(challenge, expected)
@@ -504,7 +511,7 @@ class SyncConfirmTests(LoggedInTestCase):
 
     def test_no_cancel_button_and_no_extra_notes(self):
         for name in ("core:tweets", "core:replies"):
-            html = self.client.get(reverse(name)).content.decode()
+            html = without_scripts(self.client.get(reverse(name)).content.decode())
             self.assertNotIn("data-sync-cancel", html)
             self.assertNotIn("キャンセル", html)
             self.assertNotIn("最大", html)
@@ -541,7 +548,8 @@ class ToastTests(LoggedInTestCase):
 
 class TimeLabelTests(TestCase):
     def setUp(self):
-        from datetime import datetime, timezone as tz
+        from datetime import datetime
+        from datetime import timezone as tz
 
         self.tz = tz
         self.now = datetime(2026, 10, 18, 12, 0, 0, tzinfo=tz.utc)  # 日本時間 21:00
@@ -704,7 +712,7 @@ class LightboxTests(LoggedInTestCase):
 
     def test_images_are_zoomable_buttons(self):
         self.add_post("1", ["https://pbs/a.jpg", "https://pbs/b.jpg"])
-        html = self.client.get(reverse("core:tweets")).content.decode()
+        html = without_scripts(self.client.get(reverse("core:tweets")).content.decode())
         self.assertEqual(html.count("js-zoom"), 2)
         self.assertIn("画像 1 を拡大", html)
         self.assertIn("画像 2 を拡大", html)
@@ -894,11 +902,11 @@ class ReplyBoxLayoutTests(LoggedInTestCase):
 
 
 class ScriptAmountTests(LoggedInTestCase):
-    def test_script_has_no_dollar_amounts(self):
-        from pathlib import Path
-
-        js = (Path(__file__).resolve().parent.parent / "static" / "js" / "app.js").read_text()
-        self.assertNotIn("$0.", js)
+    def test_pages_have_no_dollar_amounts(self):
+        # JS は各画面の <script> に書いているので、画面全体で確かめる
+        make_account()
+        for name in ("core:tweets", "core:replies"):
+            self.assertNotIn("$0.", self.client.get(reverse(name)).content.decode())
 
 
 class ParentTweetLinkTests(LoggedInTestCase):
