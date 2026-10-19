@@ -20,7 +20,7 @@
       </a>
     </nav>
 
-    <button type="button" class="btn-primary mt-6 w-full" data-open-compose {% if not x_account %}disabled{% endif %}>
+    <button type="button" class="mt-6 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50" data-open-compose {% if not x_account %}disabled{% endif %}>
       {% icon "send" "size-5" %}ツイート
     </button>
 
@@ -71,7 +71,7 @@
           <h2 class="text-lg font-bold text-slate-700">Xアカウントを連携してください</h2>
           {% if x_configured %}
             <p class="mt-2 text-sm leading-relaxed text-slate-600">ツイートの投稿やリプライの確認には、Xアカウントとの連携が必要です。</p>
-            <a href="{% url 'core:x_connect' %}" class="btn-primary mt-6">Xアカウントを連携する</a>
+            <a href="{% url 'core:x_connect' %}" class="mt-6 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700">Xアカウントを連携する</a>
           {% else %}
             <p class="mt-2 text-sm leading-relaxed text-slate-600">
               <code class="rounded bg-slate-200 px-1">.env</code> に <code class="rounded bg-slate-200 px-1">X_CLIENT_ID</code> と

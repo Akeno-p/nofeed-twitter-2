@@ -7,24 +7,3 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Hiragino Sans",
     "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
 }
-
-@layer components {
-  .input {
-    @apply w-full rounded-lg border-2 border-slate-400 bg-white px-3 py-2.5 text-slate-700 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200;
-  }
-  .btn-primary {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-  .btn-pill {
-    @apply inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-400 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60;
-  }
-}
-
-/* 入力エラー: 枠線を赤くする。通常の入力欄は赤いリングも付ける。
-   レイヤー外に書いて、focus 時のスタイルより必ず優先させる。 */
-.input[aria-invalid="true"] {
-  border-color: var(--color-red-500);
-}
-.input[aria-invalid="true"] {
-  box-shadow: 0 0 0 2px var(--color-red-200);
-}

@@ -55,7 +55,7 @@
                 {% icon "image" "size-5" %}<span class="sr-only">画像を添付</span>
               </label>
               <span class="js-count text-sm text-slate-500" aria-live="polite">0/{{ tweet_max_length }}</span>
-              <button type="submit" class="btn-primary js-compose-submit !py-2">{% icon "send" "size-4" %}返信</button>
+              <button type="submit" class="js-compose-submit inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-4" %}返信</button>
             </div>
             <p class="js-form-error mt-2 hidden text-right text-sm text-red-600" role="alert"></p>
           </form>

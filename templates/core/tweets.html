@@ -3,7 +3,7 @@
 {% block title %}ツイート - nofeed-twitter{% endblock %}
 {% block heading %}ツイート{% endblock %}
 {% block header_action %}
-  <button type="button" class="btn-pill js-sync" data-confirm="#sync-confirm-dialog" data-url="{% url 'core:sync_tweets' %}" data-target="#tweet-list">
+  <button type="button" class="js-sync inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-400 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60" data-confirm="#sync-confirm-dialog" data-url="{% url 'core:sync_tweets' %}" data-target="#tweet-list">
     {% icon "list-end" "size-5" %}<span class="js-sync-label">ツイート取得</span>
   </button>
   {% include "core/_sync_confirm.html" with title="新しいツイートを取得しますか？" %}
