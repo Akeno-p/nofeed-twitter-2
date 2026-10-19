@@ -1,7 +1,6 @@
 <!-- prettier-ignore -->
 {% load core_tags %}
-<!-- prettier-ignore -->
-{# 取得ボタンを押したときの確認。「取得」を押すまで、Xには何も送らない。外側クリックか Esc で閉じる #}
+<!-- 取得ボタンを押したときの確認。「取得」を押すまで、Xには何も送らない。外側クリックか Esc で閉じる -->
 <dialog
   id="sync-confirm-dialog"
   tabindex="-1"
@@ -14,8 +13,7 @@
     <h2 id="sync-confirm-title" class="text-xl font-bold">{{ title }}</h2>
     <!-- prettier-ignore -->
     <p class="mt-2.5 text-lg text-slate-600">1件あたり約{{ unit_price }}かかります。</p>
-    <!-- prettier-ignore -->
-    {# 安い料金 (Owned Reads) は、Developer Console でアプリを作ったアカウントだけが対象。複数連携しているときだけ補足する #}
+    <!-- 安い料金 (Owned Reads) は、Developer Console でアプリを作ったアカウントだけが対象。複数連携しているときだけ補足する -->
     <!-- prettier-ignore -->
     {% if x_accounts|length > 1 %}
     <!-- prettier-ignore -->

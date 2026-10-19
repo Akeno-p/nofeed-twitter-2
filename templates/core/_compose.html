@@ -1,14 +1,12 @@
 <!-- prettier-ignore -->
 {% load core_tags %}
-<!-- prettier-ignore -->
-{# 投稿フォーム。fid はページ内で重複しないようにするための接頭辞 #}
+<!-- 投稿フォーム。fid はページ内で重複しないようにするための接頭辞 -->
 <div class="js-compose" data-url="{% url 'core:create_tweet' %}">
   <div class="flex gap-3.5">
     <!-- prettier-ignore -->
     {% include "core/_avatar.html" with url=x_account.profile_image_url size="size-12" %}
     <div class="min-w-0 flex-1">
-      <!-- prettier-ignore -->
-      {# 下線 (ボーダー) は外側の枠に付け、本文欄と添付画像のプレビューをその上に並べる #}
+      <!-- 下線 (ボーダー) は外側の枠に付け、本文欄と添付画像のプレビューをその上に並べる -->
       <div
         class="js-compose-box border-b border-slate-400 transition-colors focus-within:border-slate-500 has-[[aria-invalid=true]]:border-red-500"
       >
