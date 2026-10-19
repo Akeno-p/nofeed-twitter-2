@@ -898,75 +898,12 @@ class ReplyBoxLayoutTests(LoggedInTestCase):
         self.assertLess(previews, form.index("</div>", previews))
 
 
-class PostToastAndLinkPriceTests(LoggedInTestCase):
-    def test_link_post_price_is_in_yen(self):
-        self.assertEqual(services.link_post_price(), "32円")  # $0.20 x 160
-
-    def test_main_pages_pass_the_link_price_to_the_script(self):
-        make_account()
-        for name in ("core:tweets", "core:replies"):
-            html = self.client.get(reverse(name)).content.decode()
-            self.assertIn('data-link-price="32円"', html)
-            self.assertNotIn("$0.20", html)
-
+class ScriptAmountTests(LoggedInTestCase):
     def test_script_has_no_dollar_amounts(self):
         from pathlib import Path
 
         js = (Path(__file__).resolve().parent.parent / "static" / "js" / "app.js").read_text()
         self.assertNotIn("$0.", js)
-
-    def test_main_pages_pass_the_link_pattern_to_the_script(self):
-        import html as html_lib
-
-        make_account()
-        page = self.client.get(reverse("core:tweets")).content.decode()
-        attr = page.split('data-link-pattern="')[1].split('"')[0]
-        self.assertEqual(html_lib.unescape(attr), services.LINK_PATTERN)
-
-
-class LinkConfirmTests(LoggedInTestCase):
-    def setUp(self):
-        super().setUp()
-        self.account = make_account()
-
-    def test_link_detection(self):
-        links = [
-            "https://example.com", "HTTP://EXAMPLE.COM", "見て example.com", "日本語example.com",
-            "www.example.co.jp/path", "t.co/abc", "foo.jp です",
-        ]
-        not_links = ["こんにちは", "1.5倍", "e.g. です", "foo@example.com", "ver.2", "@me です"]
-        for text in links:
-            self.assertTrue(services.LINK_LIKE.search(text), text)
-        for text in not_links:
-            self.assertIsNone(services.LINK_LIKE.search(text), text)
-
-    @mock.patch("core.x_api.requests.request")
-    def test_link_post_without_confirmation_is_stopped_before_x(self, req):
-        resp = self.client.post(reverse("core:create_tweet"), {"text": "見て example.com"},
-                                headers={"x-requested-with": "XMLHttpRequest"})
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json()["field"], "text")
-        req.assert_not_called()  # 料金の確認が無ければ、X には何も送らない
-
-    @mock.patch("core.x_api.requests.request")
-    def test_confirmed_link_post_goes_through(self, req):
-        req.return_value = fake_response(201, {"data": {"id": "80", "text": "見て example.com"}})
-        resp = self.client.post(reverse("core:create_tweet"), {"text": "見て example.com", "link_confirmed": "1"},
-                                headers={"x-requested-with": "XMLHttpRequest"})
-        self.assertEqual(resp.status_code, 200)
-        req.assert_called_once()
-
-    @mock.patch("core.x_api.requests.request")
-    def test_link_reply_without_confirmation_is_stopped_too(self, req):
-        Post.objects.create(account=self.account, x_id="11", text="t", posted_at=timezone.now(),
-                            author_x_id=ME, author_username="me", author_name="me", is_mine=True)
-        Post.objects.create(account=self.account, x_id="22", text="r", posted_at=timezone.now(),
-                            author_x_id="2", author_username="sub", author_name="s", is_mine=False,
-                            in_reply_to_x_id="11")
-        resp = self.client.post(reverse("core:create_reply"), {"reply_to": "22", "text": "https://example.com"},
-                                headers={"x-requested-with": "XMLHttpRequest"})
-        self.assertEqual(resp.status_code, 400)
-        req.assert_not_called()
 
 
 class ParentTweetLinkTests(LoggedInTestCase):

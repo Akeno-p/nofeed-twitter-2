@@ -297,8 +297,6 @@ $(function () {
   });
 
   // ---- 投稿・返信の送信 ----
-  // リンクの判定はサーバー (services.LINK_PATTERN) と同じ正規表現を使う
-  const LINK_LIKE = new RegExp($("body").attr("data-link-pattern") || "https?://", "i");
   $(document).on("submit", ".js-compose, .js-reply-form", function (e) {
     e.preventDefault();
     const $form = $(this);
@@ -310,15 +308,9 @@ $(function () {
       setFormError($form, "本文を入力してください", "text");
       return;
     }
-    const hasLink = LINK_LIKE.test(text);
-    if (hasLink &&
-        !window.confirm("本文にリンクが含まれています。リンク付きの投稿は料金が高く、1件あたり約" + $("body").data("link-price") + "かかります。投稿しますか？")) {
-      return;
-    }
 
     const data = new FormData($form[0]);
     files.forEach(function (f) { data.append("images", f); });
-    if (hasLink) data.append("link_confirmed", "1"); // 確認済みの印。無いとサーバーが投稿を止める
 
     clearError();
     clearFormError($form);

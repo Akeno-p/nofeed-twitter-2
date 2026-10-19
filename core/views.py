@@ -128,12 +128,7 @@ def _replies_html(request, account):
 
 
 def _validated_text(request, images):
-    # link_confirmed は、リンク付きの投稿の料金確認で「OK」を押したときに JS が付ける
-    return services.validate_text(
-        request.POST.get("text", ""),
-        has_images=bool(images),
-        link_confirmed=request.POST.get("link_confirmed") == "1",
-    )
+    return services.validate_text(request.POST.get("text", ""), has_images=bool(images))
 
 
 @require_POST

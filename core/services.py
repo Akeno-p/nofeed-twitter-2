@@ -23,12 +23,6 @@ PAGE_SIZE = 100  # 1ページあたりの最大取得件数 (X の上限)
 # Developer Console でアプリを作ったアカウント本人だけ。それ以外のアカウントは通常の読み取り料金になる。
 PRICE_OWNED_READ = Decimal("0.001")  # Owned Reads (1件あたり)
 PRICE_READ = Decimal("0.005")  # 通常の読み取り (1件あたり)
-PRICE_POST_WITH_URL = Decimal("0.20")  # リンク付きの投稿 (1件あたり)
-# X が自動でリンクにする書き方 (https://… のほか、example.com のような書き方もリンクになる)。
-# 当てはまったら、料金の確認を済ませた投稿だけ通す。取りこぼすと高くつくので、判定は広め
-# (Node.js なども当てはまる)。JS も同じ正規表現を使う (大文字・小文字は区別しない)。
-LINK_PATTERN = r"https?://|(?<![A-Za-z0-9@#$_./-])(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?![A-Za-z0-9-])"
-LINK_LIKE = re.compile(LINK_PATTERN, re.IGNORECASE)
 LEADING_MENTIONS = re.compile(r"^(?:@\w+(?:\s+|$))+")  # 「@id 本文」「@id」(画像だけの返信) の両方
 TRAILING_TCO = re.compile(r"\s*https://t\.co/\w+\s*$")
 MEDIA_PAGE = re.compile(r"/(?:photo|video)/\d+$")
@@ -52,8 +46,7 @@ def tweet_weight(text):
     return weight
 
 
-def validate_text(text, has_images, link_confirmed=False):
-    """link_confirmed は、リンク付きの投稿の料金確認で「OK」を押したかどうか。"""
+def validate_text(text, has_images):
     text = text.strip()
     if not text and not has_images:
         raise ValidationError("本文を入力してください")
@@ -61,8 +54,6 @@ def validate_text(text, has_images, link_confirmed=False):
         raise ValidationError(f"{settings.TWEET_MAX_LENGTH}文字以内で入力してください")
     if tweet_weight(text) > 280:
         raise ValidationError("文字数がXの上限を超えています")
-    if LINK_LIKE.search(text) and not link_confirmed:
-        raise ValidationError("リンク付きの投稿は料金が高いため、確認してから投稿してください")
     return text
 
 
@@ -84,11 +75,6 @@ def _yen(usd):
     if yen >= 10:
         return f"{yen.quantize(Decimal('1')):,}円"
     return f"{yen.quantize(Decimal('0.01')).normalize():f}円"
-
-
-def link_post_price():
-    """リンク付きの投稿にかかる料金 (円・目安)。投稿前の確認文に出す。"""
-    return _yen(PRICE_POST_WITH_URL)
 
 
 def sync_unit_price(app_owner=True):

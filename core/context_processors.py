@@ -1,6 +1,6 @@
 from accounts.middleware import SESSION_KEY
 
-from . import services, x_api
+from . import x_api
 from .models import XAccount
 
 
@@ -15,6 +15,4 @@ def x_account(request):
         "x_configured": x_api.is_configured(),
         "flash": request.session.pop("flash", None),
         "tweet_max_length": 140,
-        "link_post_price": services.link_post_price(),
-        "link_pattern": services.LINK_PATTERN,
     }
