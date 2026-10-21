@@ -211,15 +211,38 @@
       class="max-h-full max-w-full rounded-lg object-contain shadow-2xl"
     />
   </div>
+
+  <button
+    type="button"
+    data-lightbox-close
+    aria-label="閉じる"
+    class="absolute right-5 top-5 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70"
+  >
   <!-- prettier-ignore -->
-  <button type="button" data-lightbox-close aria-label="閉じる"
-          class="absolute right-5 top-5 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70">{% icon "x" "size-7" %}</button>
+    {% icon "x" "size-7" %}
+  </button>
+
+  <button
+    type="button"
+    id="lightbox-prev"
+    aria-label="前の画像"
+    hidden
+    class="absolute left-5 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70"
+  >
   <!-- prettier-ignore -->
-  <button type="button" id="lightbox-prev" aria-label="前の画像" hidden
-          class="absolute left-5 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70">{% icon "chevron-left" "size-7" %}</button>
+    {% icon "chevron-left" "size-7" %}
+  </button>
+
+  <button
+    type="button"
+    id="lightbox-next"
+    aria-label="次の画像"
+    hidden
+    class="absolute right-5 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70"
+  >
   <!-- prettier-ignore -->
-  <button type="button" id="lightbox-next" aria-label="次の画像" hidden
-          class="absolute right-5 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-white transition hover:bg-black/70">{% icon "chevron-right" "size-7" %}</button>
+    {% icon "chevron-right" "size-7" %}
+  </button>
   <p
     id="lightbox-count"
     aria-live="polite"
