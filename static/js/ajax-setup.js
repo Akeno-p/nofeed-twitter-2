@@ -1,4 +1,5 @@
-// ---- CSRF: すべての POST にトークンを付ける ----
+// ---- Ajax通信のセットアップ ----
+// CSRFトークンと X-Requested-With をくっつける
 const csrf = $('meta[name="csrf-token"]').attr("content");
 $.ajaxSetup({
   beforeSend: function (xhr, settings) {
