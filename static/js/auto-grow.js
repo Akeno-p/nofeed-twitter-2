@@ -9,11 +9,3 @@ function autoGrow(el) {
   el.style.overflowY =
     el.scrollHeight > el.clientHeight + 1 ? "auto" : "hidden";
 }
-$(document).on("input", ".js-compose-text", function () {
-  autoGrow(this);
-});
-$(window).on("resize", function () {
-  $(".js-compose-text").each(function () {
-    autoGrow(this);
-  }); // 幅が変わると折り返しも変わる
-});

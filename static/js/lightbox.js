@@ -41,39 +41,21 @@ function stepGallery(delta) {
   showGalleryImage();
 }
 
-$(document).on("click", ".js-zoom", function () {
-  const $gallery = $(this).closest(".js-gallery");
+function openLightbox(zoomBtn) {
+  const $gallery = $(zoomBtn).closest(".js-gallery");
   galleryUrls = $gallery
     .find("img")
     .map(function () {
       return this.getAttribute("src");
     })
     .get();
-  galleryIndex = $gallery.find(".js-zoom").index(this);
+  galleryIndex = $gallery.find(".js-zoom").index(zoomBtn);
   showGalleryImage();
   lightbox.showModal();
   $("html").addClass("overflow-hidden"); // 後ろのページが一緒に動かないようにする
-});
-$(lightbox).on("close", function () {
+}
+
+function resetLightbox() {
   $("html").removeClass("overflow-hidden");
   $("#lightbox-img").removeAttr("src");
-});
-$("[data-lightbox-close]").on("click", function () {
-  lightbox.close();
-});
-$("#lightbox-prev").on("click", function () {
-  stepGallery(-1);
-});
-$("#lightbox-next").on("click", function () {
-  stepGallery(1);
-});
-$(lightbox).on("click", function (e) {
-  // 画像やボタン以外 (外側) を押したら閉じる
-  if (e.target === lightbox || $(e.target).hasClass("js-lightbox-bg"))
-    lightbox.close();
-});
-$(document).on("keydown", function (e) {
-  if (!lightbox || !lightbox.open) return;
-  if (e.key === "ArrowLeft") stepGallery(-1);
-  if (e.key === "ArrowRight") stepGallery(1);
-});
+}

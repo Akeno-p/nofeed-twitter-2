@@ -60,16 +60,17 @@ function renderPreviews($form) {
     $list.append($li);
   });
 }
-$(document).on("change", ".js-compose-file", function () {
-  const $form = $(this).closest(COMPOSE);
+
+function addComposeImages(input) {
+  const $form = $(input).closest(COMPOSE);
   const files = picked.get($form[0]) || [];
-  const incoming = Array.from(this.files);
+  const incoming = Array.from(input.files);
   const room = MAX_IMAGES - files.length;
   clearFormError($form);
   if (incoming.length > room)
     setFormError($form, "画像は" + MAX_IMAGES + "枚までです", "images");
   files.push.apply(files, incoming.slice(0, room));
   picked.set($form[0], files);
-  this.value = "";
+  input.value = "";
   renderPreviews($form);
-});
+}

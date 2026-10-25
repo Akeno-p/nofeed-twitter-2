@@ -29,6 +29,3 @@ function submitAuth($box) {
       $submit.prop("disabled", false);
     });
 }
-$(document).on("click", ".js-auth-submit", function () {
-  submitAuth($(this).closest(".js-auth"));
-});

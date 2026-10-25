@@ -1,7 +1,7 @@
 <!-- prettier-ignore -->
 {% extends "base.html" %}
 <!-- prettier-ignore -->
-{% load core_tags %}
+{% load core_tags static %}
 <!-- prettier-ignore -->
 {% block title %}2段階認証 - nofeed-twitter{% endblock %}
 <!-- prettier-ignore -->
@@ -91,5 +91,19 @@
     </button>
   </div>
 </main>
+<!-- prettier-ignore -->
+{% endblock %}
+<!-- prettier-ignore -->
+{% block scripts %}
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/logout.js' %}"></script>
+<script>
+  $(document).on("click", ".js-auth-submit", function () {
+    submitAuth($(this).closest(".js-auth"));
+  });
+  $(document).on("click", ".js-logout", function () {
+    logout($(this));
+  });
+</script>
 <!-- prettier-ignore -->
 {% endblock %}

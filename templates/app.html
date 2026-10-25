@@ -308,6 +308,7 @@
 <!-- prettier-ignore -->
 {% block scripts %}
 <!-- メイン画面 (ツイート・リプライ) の JS。部品 (core/_*.html) の JS もここで読み込む (部品は何度も読み込まれるため) -->
+<script src="{% static 'js/logout.js' %}"></script>
 <script src="{% static 'js/error-banner.js' %}"></script>
 <script src="{% static 'js/toast.js' %}"></script>
 <script src="{% static 'js/lightbox.js' %}"></script>
@@ -320,5 +321,116 @@
 <script src="{% static 'js/compose.js' %}"></script>
 <script src="{% static 'js/compose-images.js' %}"></script>
 <script src="{% static 'js/sync.js' %}"></script>
+<script>
+  // ---- ログアウト ----
+  $(document).on("click", ".js-logout", function () {
+    logout($(this));
+  });
+
+  // ---- 画像の拡大表示 (lightbox) ----
+  $(document).on("click", ".js-zoom", function () {
+    openLightbox(this);
+  });
+  $(lightbox).on("close", function () {
+    resetLightbox();
+  });
+  $("[data-lightbox-close]").on("click", function () {
+    lightbox.close();
+  });
+  $("#lightbox-prev").on("click", function () {
+    stepGallery(-1);
+  });
+  $("#lightbox-next").on("click", function () {
+    stepGallery(1);
+  });
+  $(lightbox).on("click", function (e) {
+    if (e.target === lightbox || $(e.target).hasClass("js-lightbox-bg"))
+      lightbox.close();
+  });
+  $(document).on("keydown", function (e) {
+    if (!lightbox || !lightbox.open) return;
+    if (e.key === "ArrowLeft") stepGallery(-1);
+    if (e.key === "ArrowRight") stepGallery(1);
+  });
+
+  // ---- 元のツイートのウィンドウ ----
+  $(document).on("click", ".js-parent-open", function () {
+    openParentDialog(this);
+  });
+  $("[data-parent-close]").on("click", function () {
+    parentDialog.close();
+  });
+  $(parentDialog).on("click", function (e) {
+    if (e.target === parentDialog) parentDialog.close();
+  });
+  $(parentDialog).on("close", function () {
+    resetParentDialog();
+  });
+
+  // ---- 投稿日時の自動更新 ----
+  setInterval(updateTimes, 30000);
+  $(document).on("visibilitychange", function () {
+    if (!document.hidden) updateTimes();
+  });
+
+  // ---- Xアカウントの切り替え・連携の削除 ----
+  $(document).on("click", ".js-x-switch, .js-x-disconnect", function () {
+    submitXAccountAction($(this));
+  });
+
+  // ---- 設定メニュー (歯車) ----
+  $toggle.on("click", function (e) {
+    e.stopPropagation();
+    setMenu($menu.prop("hidden"));
+  });
+  $(document).on("click", function (e) {
+    if (!$(e.target).closest("#settings-menu").length) setMenu(false);
+  });
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape") setMenu(false);
+  });
+
+  // ---- 入力欄の高さ自動調整・文字数カウンタ ----
+  $(document).on("input", ".js-compose-text", function () {
+    autoGrow(this);
+    updateCount($(this).closest(COMPOSE));
+    if ($(this).attr("aria-invalid")) clearFormError($(this).closest(COMPOSE));
+  });
+  $(window).on("resize", function () {
+    $(".js-compose-text").each(function () {
+      autoGrow(this);
+    });
+  });
+
+  // ---- 投稿モーダル ----
+  $("[data-open-compose]").on("click", function () {
+    openComposeModal();
+  });
+  $("[data-close-compose]").on("click", function () {
+    dialog.close();
+  });
+  $(dialog).on("click", function (e) {
+    if (e.target === dialog) dialog.close();
+  });
+
+  // ---- 投稿・返信の送信と画像選択 ----
+  $(document).on("click", ".js-compose-submit", function () {
+    submitCompose($(this).closest(COMPOSE));
+  });
+  $(document).on("change", ".js-compose-file", function () {
+    addComposeImages(this);
+  });
+
+  // ---- ツイート取得・リプライ取得 ----
+  $(".js-sync").on("click", function () {
+    openSyncConfirm($(this));
+  });
+  $("[data-sync-confirm]").on("click", function () {
+    confirmSync($(this));
+  });
+  $("#sync-confirm-dialog").on("click", function (e) {
+    if (e.target === this) this.close();
+  });
+</script>
 <!-- prettier-ignore -->
 {% endblock %}

@@ -33,5 +33,10 @@
 <!-- prettier-ignore -->
 {{ block.super }}
 <script src="{% static 'js/reply-toggle.js' %}"></script>
+<script>
+  $(document).on("click", ".js-reply-toggle", function () {
+    toggleReplyForm(this);
+  });
+</script>
 <!-- prettier-ignore -->
 {% endblock %}

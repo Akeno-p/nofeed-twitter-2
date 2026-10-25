@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from unittest import mock
 
@@ -36,6 +37,11 @@ def make_account(user_id=ME, username="me", active=True, **kw):
         is_active=active,
         **kw,
     )
+
+
+def without_scripts(html):
+    """画面の HTML から <script> を除く (JS のコードやコメントを、画面の文言として数えないため)。"""
+    return re.sub(r"<script>.*?</script>", "", html, flags=re.DOTALL)
 
 
 class LoggedInTestCase(TestCase):
@@ -614,7 +620,7 @@ class SyncConfirmTests(LoggedInTestCase):
 
     def test_no_cancel_button_and_no_extra_notes(self):
         for name in ("core:tweets", "core:replies"):
-            html = self.client.get(reverse(name)).content.decode()
+            html = without_scripts(self.client.get(reverse(name)).content.decode())
             self.assertNotIn("data-sync-cancel", html)
             self.assertNotIn("キャンセル", html)
             self.assertNotIn("最大", html)
@@ -887,7 +893,7 @@ class LightboxTests(LoggedInTestCase):
 
     def test_images_are_zoomable_buttons(self):
         self.add_post("1", ["https://pbs/a.jpg", "https://pbs/b.jpg"])
-        html = self.client.get(reverse("core:tweets")).content.decode()
+        html = without_scripts(self.client.get(reverse("core:tweets")).content.decode())
         self.assertEqual(html.count("js-zoom"), 2)
         self.assertIn("画像 1 を拡大", html)
         self.assertIn("画像 2 を拡大", html)

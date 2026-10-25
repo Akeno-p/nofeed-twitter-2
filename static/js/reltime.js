@@ -12,7 +12,3 @@ function updateTimes() {
     if ($(this).text() !== label) $(this).text(label);
   });
 }
-setInterval(updateTimes, 30000);
-$(document).on("visibilitychange", function () {
-  if (!document.hidden) updateTimes(); // 別のタブから戻ったら、すぐ最新にする
-});

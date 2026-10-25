@@ -23,10 +23,6 @@ function updateCount($form) {
     .text(len + "/" + max)
     .toggleClass("text-red-600", len >= max);
 }
-$(document).on("input", ".js-compose-text", function () {
-  updateCount($(this).closest(COMPOSE));
-  if ($(this).attr("aria-invalid")) clearFormError($(this).closest(COMPOSE));
-});
 
 // ---- 投稿・返信の送信 ----
 function submitCompose($form) {
@@ -91,6 +87,3 @@ function submitCompose($form) {
       $submit.prop("disabled", false);
     });
 }
-$(document).on("click", ".js-compose-submit", function () {
-  submitCompose($(this).closest(COMPOSE));
-});

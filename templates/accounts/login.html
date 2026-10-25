@@ -1,7 +1,7 @@
 <!-- prettier-ignore -->
 {% extends "base.html" %}
 <!-- prettier-ignore -->
-{% load core_tags %}
+{% load core_tags static %}
 <!-- prettier-ignore -->
 {% block title %}ログイン - nofeed-twitter{% endblock %}
 <!-- prettier-ignore -->
@@ -64,5 +64,15 @@
     </div>
   </div>
 </main>
+<!-- prettier-ignore -->
+{% endblock %}
+<!-- prettier-ignore -->
+{% block scripts %}
+<script src="{% static 'js/auth.js' %}"></script>
+<script>
+  $(document).on("click", ".js-auth-submit", function () {
+    submitAuth($(this).closest(".js-auth"));
+  });
+</script>
 <!-- prettier-ignore -->
 {% endblock %}

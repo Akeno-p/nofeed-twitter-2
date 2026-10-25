@@ -22,21 +22,18 @@ function runSync($btn) {
     });
 }
 
-$(".js-sync").on("click", function () {
-  const $btn = $(this);
+function openSyncConfirm($btn) {
   const confirmDialog = document.querySelector($btn.data("confirm"));
   if (!confirmDialog) return;
   $(confirmDialog).data("sync-btn", $btn);
   confirmDialog.showModal();
   // 開いた直後に Enter を押しても取得(課金)が始まらないよう、ボタンではなくウィンドウに置く
   confirmDialog.focus();
-});
-$("[data-sync-confirm]").on("click", function () {
-  const $dlg = $(this).closest("dialog");
+}
+
+function confirmSync($confirmBtn) {
+  const $dlg = $confirmBtn.closest("dialog");
   const $btn = $dlg.data("sync-btn");
   $dlg[0].close();
   if ($btn) runSync($btn);
-});
-$("#sync-confirm-dialog").on("click", function (e) {
-  if (e.target === this) this.close(); // 外側クリックはキャンセル扱い
-});
+}
