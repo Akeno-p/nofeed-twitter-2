@@ -1,7 +1,7 @@
 <!-- prettier-ignore -->
 {% extends "app.html" %}
 <!-- prettier-ignore -->
-{% load core_tags %}
+{% load core_tags static %}
 <!-- prettier-ignore -->
 {% block title %}リプライ - nofeed-twitter{% endblock %}
 <!-- prettier-ignore -->
@@ -32,21 +32,6 @@
 {% block scripts %}
 <!-- prettier-ignore -->
 {{ block.super }}
-<script>
-  // ---- 返信欄の開閉 (_reply_list.html の「返信する」) ----
-  $(document).on("click", ".js-reply-toggle", function () {
-    const $form = $(this).siblings(".js-reply-form");
-    const open = $form.hasClass("hidden");
-    $form.toggleClass("hidden", !open);
-    $(this).attr("aria-expanded", open);
-    if (open)
-      $form
-        .find("textarea")
-        .each(function () {
-          autoGrow(this);
-        })
-        .trigger("focus");
-  });
-</script>
+<script src="{% static 'js/reply-toggle.js' %}"></script>
 <!-- prettier-ignore -->
 {% endblock %}
