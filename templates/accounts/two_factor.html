@@ -44,7 +44,6 @@
 
   <div
     class="js-auth mt-6 space-y-5 text-left"
-    data-url="{% url 'accounts:two_factor' %}"
   >
     <div>
       <!-- prettier-ignore -->
@@ -84,7 +83,6 @@
   <div class="absolute bottom-4 right-1">
     <button
       type="button"
-      data-url="{% url 'accounts:logout' %}"
       class="js-logout cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline"
     >
       ログイン画面に戻る
@@ -95,14 +93,48 @@
 {% endblock %}
 <!-- prettier-ignore -->
 {% block scripts %}
-<script src="{% static 'js/auth.js' %}"></script>
-<script src="{% static 'js/logout.js' %}"></script>
 <script>
   $(document).on("click", ".js-auth-submit", function () {
-    submitAuth($(this).closest(".js-auth"));
+    const $box = $(this).closest(".js-auth");
+    const $submit = $(this);
+    const $inputs = $box.find("input[name]");
+    const data = {};
+    $inputs.each(function () {
+      data[this.name] = this.value;
+    });
+    $submit.prop("disabled", true);
+    $.ajax({
+      url: "{% url 'accounts:two_factor' %}",
+      method: "POST",
+      data: data,
+    })
+      .done(function (res) {
+        location.href = res.redirect;
+      })
+      .fail(function (xhr) {
+        const body = xhr.responseJSON || {};
+        $inputs.removeAttr("aria-invalid aria-describedby");
+        (body.fields || []).forEach(function (name) {
+          $inputs.filter('[name="' + name + '"]').attr({
+            "aria-invalid": "true",
+            "aria-describedby": "form-error",
+          });
+        });
+        $box
+          .find("#form-error")
+          .text(
+            body.error || "通信に失敗しました。もう一度お試しください。",
+          );
+        $submit.prop("disabled", false);
+      });
   });
   $(document).on("click", ".js-logout", function () {
-    logout($(this));
+    $.ajax({
+      url: "{% url 'accounts:logout' %}",
+      method: "POST",
+    }).done(function (res) {
+      location.href = res.redirect;
+    });
   });
 </script>
 <!-- prettier-ignore -->

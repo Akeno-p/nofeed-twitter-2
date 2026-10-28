@@ -93,7 +93,7 @@
         {% endif %}
         <div class="mt-2.5 border-t border-slate-200 pt-2.5">
           <!-- prettier-ignore -->
-          <button type="button" data-url="{% url 'accounts:logout' %}"
+          <button type="button"
                   class="js-logout flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "log-out" "size-5" %}ログアウト</button>
         </div>
       </div>
@@ -141,7 +141,7 @@
       <!-- prettier-ignore -->
       <button type="button" class="ml-auto rounded-lg bg-slate-700 px-3.5 py-2.5 text-base text-white disabled:opacity-50" data-open-compose {% if not x_account %}disabled{% endif %}>ツイート</button>
       <!-- prettier-ignore -->
-      <button type="button" data-url="{% url 'accounts:logout' %}" class="js-logout rounded-lg p-2.5 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-6" %}</button>
+      <button type="button" class="js-logout rounded-lg p-2.5 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-6" %}</button>
     </nav>
 
     <main>
@@ -308,23 +308,25 @@
 <!-- prettier-ignore -->
 {% block scripts %}
 <!-- メイン画面 (ツイート・リプライ) の JS。部品 (core/_*.html) の JS もここで読み込む (部品は何度も読み込まれるため) -->
-<script src="{% static 'js/logout.js' %}"></script>
 <script src="{% static 'js/error-banner.js' %}"></script>
 <script src="{% static 'js/toast.js' %}"></script>
 <script src="{% static 'js/lightbox.js' %}"></script>
 <script src="{% static 'js/parent-dialog.js' %}"></script>
 <script src="{% static 'js/reltime.js' %}"></script>
-<script src="{% static 'js/x-accounts.js' %}"></script>
 <script src="{% static 'js/settings-menu.js' %}"></script>
 <script src="{% static 'js/auto-grow.js' %}"></script>
 <script src="{% static 'js/compose-modal.js' %}"></script>
 <script src="{% static 'js/compose.js' %}"></script>
 <script src="{% static 'js/compose-images.js' %}"></script>
-<script src="{% static 'js/sync.js' %}"></script>
 <script>
   // ---- ログアウト ----
   $(document).on("click", ".js-logout", function () {
-    logout($(this));
+    $.ajax({
+      url: "{% url 'accounts:logout' %}",
+      method: "POST",
+    }).done(function (res) {
+      location.href = res.redirect;
+    });
   });
 
   // ---- 画像の拡大表示 (lightbox) ----
@@ -375,7 +377,19 @@
 
   // ---- Xアカウントの切り替え・連携の削除 ----
   $(document).on("click", ".js-x-switch, .js-x-disconnect", function () {
-    submitXAccountAction($(this));
+    const message = $(this).attr("data-confirm");
+    if (message && !window.confirm(message)) return;
+    $.ajax({
+      url: $(this).attr("data-url"),
+      method: "POST",
+    })
+      .done(function () {
+        location.reload();
+      })
+      .fail(function (xhr) {
+        setMenu(false);
+        showError(errorOf(xhr)[0]);
+      });
   });
 
   // ---- 設定メニュー (歯車) ----
@@ -421,16 +435,48 @@
     addComposeImages(this);
   });
 
-  // ---- ツイート取得・リプライ取得 ----
-  $(".js-sync").on("click", function () {
-    openSyncConfirm($(this));
-  });
-  $("[data-sync-confirm]").on("click", function () {
-    confirmSync($(this));
-  });
-  $("#sync-confirm-dialog").on("click", function (e) {
-    if (e.target === this) this.close();
-  });
+  // ---- ツイート取得・リプライ取得の共通設定 ----
+  function setupSync(syncUrl, targetSelector) {
+    function runSync($btn) {
+      const $label = $btn.find(".js-sync-label");
+      const original = $label.text();
+      clearError();
+      $btn.prop("disabled", true);
+      $label.text("取得中…");
+      $.ajax({
+        url: syncUrl,
+        method: "POST",
+      })
+        .done(function (res) {
+          $(targetSelector).html(res.html);
+          showToast("成功", "success");
+        })
+        .fail(function (xhr) {
+          const e = errorOf(xhr);
+          showError(e[0], e[1]);
+          showToast("失敗", "failure");
+        })
+        .always(function () {
+          $btn.prop("disabled", false);
+          $label.text(original);
+        });
+    }
+
+    $(".js-sync").on("click", function () {
+      const confirmDialog = document.querySelector($(this).data("confirm"));
+      if (!confirmDialog) return;
+      confirmDialog.showModal();
+      confirmDialog.focus();
+    });
+    $("[data-sync-confirm]").on("click", function () {
+      const $dlg = $(this).closest("dialog");
+      $dlg[0].close();
+      runSync($(".js-sync"));
+    });
+    $("#sync-confirm-dialog").on("click", function (e) {
+      if (e.target === this) this.close();
+    });
+  }
 </script>
 <!-- prettier-ignore -->
 {% endblock %}
