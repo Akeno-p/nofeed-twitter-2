@@ -19,11 +19,11 @@ class AuthFlowTests(TestCase):
 
     def login(self, password="correct-horse-1", username="owner"):
         return self.client.post(
-            reverse("accounts:login"), {"username": username, "password": password}
+            reverse("accounts:login_api"), {"username": username, "password": password}
         )
 
     def otp(self, code):
-        return self.client.post(reverse("accounts:two_factor"), {"code": code})
+        return self.client.post(reverse("accounts:two_factor_api"), {"code": code})
 
     def assertGoes(self, resp, url_name):
         """成功: JS が移る先の URL を JSON で返す。"""
@@ -214,7 +214,7 @@ class AdminAccessTests(TestCase):
 
     def test_password_alone_does_not_open_admin(self):
         self.client.post(
-            reverse("accounts:login"),
+            reverse("accounts:login_api"),
             {"username": "owner", "password": "correct-horse-1"},
         )
         resp = self.client.get("/admin/")
@@ -227,11 +227,11 @@ class AdminAccessTests(TestCase):
             user=self.admin, secret=TotpDevice.new_secret(), confirmed=True
         )
         self.client.post(
-            reverse("accounts:login"),
+            reverse("accounts:login_api"),
             {"username": "owner", "password": "correct-horse-1"},
         )
         self.client.post(
-            reverse("accounts:two_factor"), {"code": pyotp.TOTP(device.secret).now()}
+            reverse("accounts:two_factor_api"), {"code": pyotp.TOTP(device.secret).now()}
         )
         self.assertEqual(self.client.get("/admin/").status_code, 200)
 
@@ -258,7 +258,7 @@ class Reset2faCommandTests(TestCase):
         self.assertFalse(TotpDevice.objects.filter(user=self.user).exists())
 
         self.client.post(
-            reverse("accounts:login"),
+            reverse("accounts:login_api"),
             {"username": "owner", "password": "correct-horse-1"},
         )
         resp = self.client.get(reverse("accounts:two_factor"))

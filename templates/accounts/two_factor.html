@@ -106,7 +106,7 @@
     });
     $submit.prop("disabled", true);
     $.ajax({
-      url: "{% url 'accounts:two_factor' %}",
+      url: "{% url 'accounts:two_factor_api' %}",
       method: "POST",
       data: data,
     })

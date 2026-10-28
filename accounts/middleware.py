@@ -15,7 +15,9 @@ class TwoFactorRequiredMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.login_path = reverse("accounts:login")
+        self.login_api_path = reverse("accounts:login_api")
         self.two_factor_path = reverse("accounts:two_factor")
+        self.two_factor_api_path = reverse("accounts:two_factor_api")
         self.logout_path = reverse("accounts:logout")
 
     def __call__(self, request):
@@ -24,13 +26,15 @@ class TwoFactorRequiredMiddleware:
             return self.get_response(request)
 
         if not request.user.is_authenticated:
-            if path in (self.login_path, self.logout_path):
+            if path in (self.login_path, self.login_api_path, self.logout_path):
                 return self.get_response(request)
             return self._deny(request, self.login_path)
 
         if not request.session.get(SESSION_KEY) and path not in (
             self.login_path,
+            self.login_api_path,
             self.two_factor_path,
+            self.two_factor_api_path,
             self.logout_path,
         ):
             return self._deny(request, self.two_factor_path)

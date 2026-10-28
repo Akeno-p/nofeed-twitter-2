@@ -79,7 +79,7 @@
     });
     $submit.prop("disabled", true);
     $.ajax({
-      url: "{% url 'accounts:login' %}",
+      url: "{% url 'accounts:login_api' %}",
       method: "POST",
       data: data,
     })
