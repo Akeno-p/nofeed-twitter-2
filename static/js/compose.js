@@ -1,33 +1,33 @@
 // ---- 投稿欄 (_compose.html) と返信欄 (_reply_list.html) の処理 ----
 const MAX_IMAGES = 4;
-const COMPOSE = ".js-compose, .js-reply-form"; // 投稿欄と返信欄の外側の箱
+const COMPOSE = "[data-compose], [data-reply-form]"; // 投稿欄と返信欄の外側の箱
 
 // ---- 入力エラー: 該当の入力欄を赤くし、ボタンの下に理由を出す ----
 function setFormError($form, msg, field) {
   clearFormError($form);
-  $form.find(".js-form-error").text(msg).removeClass("hidden");
+  $form.find("[data-form-error]").text(msg).removeClass("hidden");
   if (field === "text")
-    $form.find(".js-compose-text").attr("aria-invalid", "true");
+    $form.find("[data-compose-text]").attr("aria-invalid", "true");
 }
 function clearFormError($form) {
-  $form.find(".js-form-error").addClass("hidden").empty();
+  $form.find("[data-form-error]").addClass("hidden").empty();
   $form.find("[aria-invalid]").removeAttr("aria-invalid");
 }
 
 // ---- 文字数カウンタ ----
 function updateCount($form) {
-  const len = Array.from($form.find(".js-compose-text").val()).length;
-  const max = Number($form.find(".js-compose-text").attr("maxlength"));
+  const len = Array.from($form.find("[data-compose-text]").val()).length;
+  const max = Number($form.find("[data-compose-text]").attr("maxlength"));
   $form
-    .find(".js-count")
+    .find("[data-count]")
     .text(len + "/" + max)
     .toggleClass("text-red-600", len >= max);
 }
 
 // ---- 投稿・返信の送信 ----
 function submitCompose($form) {
-  const $submit = $form.find(".js-compose-submit");
-  const text = $form.find(".js-compose-text").val();
+  const $submit = $form.find("[data-compose-submit]");
+  const text = $form.find("[data-compose-text]").val();
   const files = picked.get($form[0]) || [];
 
   if (!text.trim() && !files.length) {
@@ -55,7 +55,7 @@ function submitCompose($form) {
   })
     .done(function (res) {
       $form
-        .find(".js-compose-text")
+        .find("[data-compose-text]")
         .val("")
         .each(function () {
           autoGrow(this);
@@ -63,7 +63,7 @@ function submitCompose($form) {
       picked.delete($form[0]);
       renderPreviews($form);
       updateCount($form);
-      if ($form.hasClass("js-reply-form")) {
+      if ($form.is("[data-reply-form]")) {
         $("#reply-list").html(res.html);
       } else {
         $("#tweet-list").html(res.html); // ツイート画面にいるときだけ一覧が差し替わる

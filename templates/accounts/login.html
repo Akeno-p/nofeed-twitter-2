@@ -14,7 +14,7 @@
   >
     nofeed-twitter
   </h1>
-  <div class="js-auth space-y-6">
+  <div id="login-form" class="space-y-6">
     <div>
       <label for="username" class="mb-2 block text-sm font-bold text-slate-600"
         >ユーザー名</label
@@ -54,7 +54,7 @@
     </div>
     <div class="pt-4">
       <!-- prettier-ignore -->
-      <button type="button" class="js-auth-submit inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "log-in" "size-5" %}ログイン</button>
+      <button type="button" id="login-submit" class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "log-in" "size-5" %}ログイン</button>
       <!-- 文章が出ても下の要素が動かないよう、エラーがなくても1行分の高さを確保しておく -->
       <p
         id="form-error"
@@ -69,8 +69,8 @@
 <!-- prettier-ignore -->
 {% block scripts %}
 <script>
-  $(document).on("click", ".js-auth-submit", function () {
-    const $box = $(this).closest(".js-auth");
+  $("#login-submit").on("click", function () {
+    const $box = $("#login-form");
     const $submit = $(this);
     const $inputs = $box.find("input[name]");
     const data = {};
@@ -97,9 +97,7 @@
         });
         $box
           .find("#form-error")
-          .text(
-            body.error || "通信に失敗しました。もう一度お試しください。",
-          );
+          .text(body.error || "通信に失敗しました。もう一度お試しください。");
         $submit.prop("disabled", false);
       });
   });

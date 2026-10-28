@@ -8,7 +8,8 @@
   <!-- 「あなたのツイート 「…」 に対しての返信」。押すと、元ツイートの全文と画像をウィンドウで見られる -->
   <button
     type="button"
-    class="js-parent-open group mb-3.5 flex max-w-full cursor-pointer items-center gap-2.5 text-left text-base text-slate-500 hover:text-slate-700"
+    data-parent-open
+    class="group mb-3.5 flex max-w-full cursor-pointer items-center gap-2.5 text-left text-base text-slate-500 hover:text-slate-700"
     aria-haspopup="dialog"
     aria-label="元のツイートを見る"
   >
@@ -17,7 +18,7 @@
     <!-- prettier-ignore -->
     <span class="min-w-0 truncate underline-offset-4 group-hover:underline">あなたのツイート 「 {% with s=t.parent.text|snippet:20 %}{% if s %}{{ s }}{% else %}(画像のみ){% endif %}{% endwith %} 」 に対しての返信</span>
   </button>
-  <template class="js-parent-tpl">
+  <template data-parent-tpl>
     <div class="flex gap-3.5">
       <!-- prettier-ignore -->
       {% include "core/_avatar.html" with url=t.parent.author_avatar size="size-12" %}
@@ -74,20 +75,23 @@
       <div class="mt-3.5">
         <button
           type="button"
-          class="js-reply-toggle inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-base text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+          data-reply-toggle
+          class="inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-base text-slate-500 hover:bg-slate-100 hover:text-slate-700"
           aria-expanded="false"
         >
           <!-- prettier-ignore -->
           {% icon "undo-2" "size-5" %}返信する
         </button>
         <div
-          class="js-reply-form mt-2.5 hidden"
+          data-reply-form
+          class="mt-2.5 hidden"
           data-url="{% url 'core:create_reply' %}"
           data-reply-to="{{ r.x_id }}"
         >
           <!-- 枠線は外側の箱に付け、本文欄と添付画像のプレビューを、その内側に並べる -->
           <div
-            class="js-compose-box rounded-lg border-2 border-slate-300 bg-white transition-colors focus-within:border-slate-500 has-[[aria-invalid=true]]:border-red-500"
+            data-compose-box
+            class="rounded-lg border-2 border-slate-300 bg-white transition-colors focus-within:border-slate-500 has-[[aria-invalid=true]]:border-red-500"
           >
             <!-- prettier-ignore -->
             <label for="reply-{{ r.x_id }}" class="sr-only">@{{ r.author_username }} への返信</label>
@@ -97,10 +101,13 @@
               rows="2"
               maxlength="{{ tweet_max_length }}"
               placeholder="@{{ r.author_username }} に返信"
-              class="js-compose-text block max-h-[50vh] w-full resize-none overflow-hidden border-0 bg-transparent px-3.5 py-2.5 text-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+              data-compose-text
+              class="block max-h-[50vh] w-full resize-none overflow-hidden border-0 bg-transparent px-3.5 py-2.5 text-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-0"
             ></textarea>
             <ul
-              class="js-previews js-gallery flex flex-wrap gap-2.5 px-3.5 pb-3.5 empty:hidden"
+              data-previews
+              data-gallery
+              class="flex flex-wrap gap-2.5 px-3.5 pb-3.5 empty:hidden"
               aria-label="添付する画像"
             ></ul>
           </div>
@@ -109,24 +116,27 @@
               type="file"
               accept="image/jpeg,image/png,image/gif,image/webp"
               multiple
-              class="js-compose-file sr-only"
+              data-compose-file
+              class="sr-only"
               id="file-reply-{{ r.x_id }}"
             />
             <label
               for="file-reply-{{ r.x_id }}"
-              class="js-add-image mr-auto cursor-pointer rounded-full p-2 text-slate-500 transition hover:bg-slate-200 focus-within:outline-2"
+              data-add-image
+              class="mr-auto cursor-pointer rounded-full p-2 text-slate-500 transition hover:bg-slate-200 focus-within:outline-2"
               title="画像を添付 (4枚まで)"
             >
               <!-- prettier-ignore -->
               {% icon "image" "size-6" %}<span class="sr-only">画像を添付</span>
             </label>
             <!-- prettier-ignore -->
-            <span class="js-count text-base text-slate-500" aria-live="polite">0/{{ tweet_max_length }}</span>
+            <span data-count class="text-base text-slate-500" aria-live="polite">0/{{ tweet_max_length }}</span>
             <!-- prettier-ignore -->
-            <button type="button" class="js-compose-submit inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-2.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-5" %}返信</button>
+            <button type="button" data-compose-submit class="inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-lg bg-slate-700 px-5 py-2.5 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "send" "size-5" %}返信</button>
           </div>
           <p
-            class="js-form-error mt-2.5 hidden text-right text-base text-red-600"
+            data-form-error
+            class="mt-2.5 hidden text-right text-base text-red-600"
             role="alert"
           ></p>
         </div>

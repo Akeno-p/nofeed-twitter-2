@@ -4,10 +4,10 @@ const picked = new WeakMap();
 // 上限の枚数に達したら、画像の追加ボタンを押せなくする (外せば、また押せる)
 function updateAddImage($form, count) {
   const full = count >= MAX_IMAGES;
-  $form.find(".js-compose-file").prop("disabled", full);
+  $form.find("[data-compose-file]").prop("disabled", full);
   // 通常は押せる見た目 (cursor-pointer / hover の色)。上限のときは薄くして「押せない」カーソルにする
   $form
-    .find(".js-add-image")
+    .find("[data-add-image]")
     .toggleClass("cursor-pointer hover:bg-slate-200", !full)
     .toggleClass("cursor-not-allowed opacity-40", full)
     .attr("aria-disabled", full ? "true" : null)
@@ -29,16 +29,20 @@ function renderPreviews($form) {
   });
   const urls = [];
   previewUrls.set($form[0], urls);
-  const $list = $form.find(".js-previews").empty();
+  const $list = $form.find("[data-previews]").empty();
   files.forEach(function (file, i) {
     const url = URL.createObjectURL(file);
     urls.push(url);
     const $li = $("<li>").addClass("relative");
-    // 画像を押すと拡大表示 (投稿済みの画像と同じ部品。.js-gallery 内の .js-zoom が対象)
+    // 画像を押すと拡大表示 (投稿済みの画像と同じ部品。[data-gallery] 内の [data-zoom] が対象)
     $("<button>")
-      .attr({ type: "button", "aria-label": "画像 " + (i + 1) + " を拡大" })
+      .attr({
+        type: "button",
+        "data-zoom": "",
+        "aria-label": "画像 " + (i + 1) + " を拡大",
+      })
       .addClass(
-        "js-zoom block cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500",
+        "block cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500",
       )
       .append(
         $("<img>")

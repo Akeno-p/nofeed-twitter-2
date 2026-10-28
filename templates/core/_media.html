@@ -3,14 +3,16 @@
 <!-- prettier-ignore -->
 {% if post.media_urls %}
 <ul
-  class="js-gallery mt-2.5 grid max-w-96 gap-1.5 overflow-hidden rounded-2xl {% if post.media_urls|length > 1 %}grid-cols-2{% endif %}"
+  data-gallery
+  class="mt-2.5 grid max-w-96 gap-1.5 overflow-hidden rounded-2xl {% if post.media_urls|length > 1 %}grid-cols-2{% endif %}"
 >
   <!-- prettier-ignore -->
   {% for url in post.media_urls %}
   <li>
     <button
       type="button"
-      class="js-zoom block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
+      data-zoom
+      class="block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
       aria-label="画像 {{ forloop.counter }} を拡大"
     >
       <img

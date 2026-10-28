@@ -10,11 +10,12 @@
 {% block header_action %}
 <button
   type="button"
-  class="js-sync inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-slate-400 bg-white px-5 py-2.5 text-base text-slate-700 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60"
+  id="sync-btn"
+  class="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-slate-400 bg-white px-5 py-2.5 text-base text-slate-700 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60"
   data-confirm="#sync-confirm-dialog"
 >
   <!-- prettier-ignore -->
-  {% icon "list-end" "size-6" %}<span class="js-sync-label">ツイート取得</span>
+  {% icon "list-end" "size-6" %}<span id="sync-label">ツイート取得</span>
 </button>
 <!-- prettier-ignore -->
 {% include "core/_sync_confirm.html" with title="新しいツイートを取得しますか？" %}

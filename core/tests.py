@@ -755,7 +755,7 @@ class TimeLabelTests(TestCase):
             is_mine=True,
         )
         html = self.client.get(reverse("core:tweets")).content.decode()
-        self.assertIn('class="js-reltime"', html)
+        self.assertIn("data-reltime", html)
         self.assertIn("20分", html)
         self.assertIn("data-abs=", html)
 
@@ -894,10 +894,10 @@ class LightboxTests(LoggedInTestCase):
     def test_images_are_zoomable_buttons(self):
         self.add_post("1", ["https://pbs/a.jpg", "https://pbs/b.jpg"])
         html = without_scripts(self.client.get(reverse("core:tweets")).content.decode())
-        self.assertEqual(html.count("js-zoom"), 2)
+        self.assertEqual(html.count("data-zoom"), 2)
         self.assertIn("画像 1 を拡大", html)
         self.assertIn("画像 2 を拡大", html)
-        self.assertIn('class="js-gallery', html)
+        self.assertIn("data-gallery", html)
 
     def test_lightbox_markup_is_on_main_pages_only(self):
         for name in ("core:tweets", "core:replies"):
@@ -932,17 +932,17 @@ class LightboxTests(LoggedInTestCase):
             in_reply_to_x_id=mine.x_id,
             media_urls=["https://pbs/r.jpg"],
         )
-        self.assertContains(self.client.get(reverse("core:replies")), "js-zoom")
+        self.assertContains(self.client.get(reverse("core:replies")), "data-zoom")
 
 
 class ComposeLayoutTests(LoggedInTestCase):
     def test_previews_sit_inside_the_bordered_box_above_the_underline(self):
         make_account()
         html = self.client.get(reverse("core:tweets")).content.decode()
-        box = html.index("js-compose-box")
+        box = html.index("data-compose-box")
         textarea = html.index('name="text"', box)
-        previews = html.index("js-previews", box)
-        counter = html.index("js-count", box)
+        previews = html.index("data-previews", box)
+        counter = html.index("data-count", box)
         self.assertLess(box, textarea)
         self.assertLess(textarea, previews)  # 本文欄の下に、プレビュー
         self.assertLess(previews, counter)  # その下に、ボタンの行
@@ -955,7 +955,7 @@ class ComposeLayoutTests(LoggedInTestCase):
 
     def test_add_image_button_is_marked_so_it_can_be_disabled(self):
         make_account()
-        self.assertContains(self.client.get(reverse("core:tweets")), "js-add-image")
+        self.assertContains(self.client.get(reverse("core:tweets")), "data-add-image")
 
 
 class AutoGrowMarkupTests(LoggedInTestCase):
@@ -1002,9 +1002,9 @@ class PreviewZoomMarkupTests(LoggedInTestCase):
     def test_preview_list_is_a_gallery_so_previews_open_the_lightbox(self):
         make_account()
         html = self.client.get(reverse("core:tweets")).content.decode()
-        ul = html[html.index('class="js-previews') :]
+        ul = html[html.index("data-previews") :]
         ul = ul[: ul.index(">")]
-        self.assertIn("js-gallery", ul)
+        self.assertIn("data-gallery", ul)
         # 拡大表示の部品は、プレビューと同じページにある
         self.assertIn('id="lightbox"', html)
 
@@ -1139,9 +1139,9 @@ class ReplyWithImageTests(LoggedInTestCase):
 
     def test_reply_form_has_image_controls(self):
         html = self.client.get(reverse("core:replies")).content.decode()
-        form = html[html.index('class="js-reply-form') :]
-        form = form[: form.index("js-form-error")]
-        for needle in ("js-compose-file", "js-add-image", "js-previews", "js-gallery"):
+        form = html[html.index("data-reply-form") :]
+        form = form[: form.index("data-form-error")]
+        for needle in ("data-compose-file", "data-add-image", "data-previews", "data-gallery"):
             self.assertIn(needle, form)
 
     def test_leading_mention_only_text_is_stripped(self):
@@ -1192,12 +1192,12 @@ class ReplyBoxLayoutTests(LoggedInTestCase):
             in_reply_to_x_id=mine.x_id,
         )
         html = self.client.get(reverse("core:replies")).content.decode()
-        form = html[html.index('class="js-reply-form') :]
-        form = form[: form.index("js-form-error")]
-        box = form.index("js-compose-box")
+        form = html[html.index("data-reply-form") :]
+        form = form[: form.index("data-form-error")]
+        box = form.index("data-compose-box")
         textarea = form.index("<textarea", box)
-        previews = form.index("js-previews", box)
-        row = form.index("js-count", box)
+        previews = form.index("data-previews", box)
+        row = form.index("data-count", box)
         self.assertLess(box, textarea)
         self.assertLess(textarea, previews)
         self.assertLess(previews, row)
@@ -1249,12 +1249,12 @@ class ParentTweetLinkTests(LoggedInTestCase):
         )
         html = self.client.get(reverse("core:replies")).content.decode()
         button = html[
-            html.index('class="js-parent-open') : html.index(
-                "</button>", html.index('class="js-parent-open')
+            html.index("data-parent-open") : html.index(
+                "</button>", html.index("data-parent-open")
             )
         ]
         tpl = html[
-            html.index('<template class="js-parent-tpl">') : html.index("</template>")
+            html.index("<template data-parent-tpl>") : html.index("</template>")
         ]
         return button, tpl
 

@@ -43,7 +43,8 @@
   {% endif %}
 
   <div
-    class="js-auth mt-6 space-y-5 text-left"
+    id="two-factor-form"
+    class="mt-6 space-y-5 text-left"
   >
     <div>
       <!-- prettier-ignore -->
@@ -70,7 +71,7 @@
     </div>
     <div class="pt-3">
       <!-- prettier-ignore -->
-      <button type="button" class="js-auth-submit inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "key-round" "size-5" %}認証</button>
+      <button type="button" id="two-factor-submit" class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-3 text-base font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{% icon "key-round" "size-5" %}認証</button>
       <p
         id="form-error"
         role="alert"
@@ -83,7 +84,8 @@
   <div class="absolute bottom-4 right-1">
     <button
       type="button"
-      class="js-logout cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline"
+      id="logout-btn"
+      class="cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline"
     >
       ログイン画面に戻る
     </button>
@@ -94,8 +96,8 @@
 <!-- prettier-ignore -->
 {% block scripts %}
 <script>
-  $(document).on("click", ".js-auth-submit", function () {
-    const $box = $(this).closest(".js-auth");
+  $("#two-factor-submit").on("click", function () {
+    const $box = $("#two-factor-form");
     const $submit = $(this);
     const $inputs = $box.find("input[name]");
     const data = {};
@@ -128,7 +130,7 @@
         $submit.prop("disabled", false);
       });
   });
-  $(document).on("click", ".js-logout", function () {
+  $("#logout-btn").on("click", function () {
     $.ajax({
       url: "{% url 'accounts:logout' %}",
       method: "POST",

@@ -65,17 +65,18 @@
             {% else %}
             <button
               type="button"
+              data-x-switch
               data-url="{% url 'core:x_switch' acc.pk %}"
-              class="js-x-switch rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+              class="rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
             >
               切り替え
             </button>
             <!-- prettier-ignore -->
             {% endif %}
             <!-- prettier-ignore -->
-            <button type="button" data-url="{% url 'core:x_disconnect' acc.pk %}" aria-label="@{{ acc.username }} の連携を削除"
+            <button type="button" data-x-disconnect data-url="{% url 'core:x_disconnect' acc.pk %}" aria-label="@{{ acc.username }} の連携を削除"
                       data-confirm="@{{ acc.username }} の連携を削除します。保存しているツイートの記録も消えます (Xのツイート自体は消えません)。よろしいですか？"
-                      class="js-x-disconnect rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">{% icon "trash-2" "size-5" %}</button>
+                      class="rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">{% icon "trash-2" "size-5" %}</button>
           </li>
           <!-- prettier-ignore -->
           {% empty %}
@@ -93,8 +94,8 @@
         {% endif %}
         <div class="mt-2.5 border-t border-slate-200 pt-2.5">
           <!-- prettier-ignore -->
-          <button type="button"
-                  class="js-logout flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "log-out" "size-5" %}ログアウト</button>
+          <button type="button" data-logout
+                  class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-base text-slate-700 hover:bg-slate-100">{% icon "log-out" "size-5" %}ログアウト</button>
         </div>
       </div>
       <div class="flex items-center gap-3.5">
@@ -141,7 +142,7 @@
       <!-- prettier-ignore -->
       <button type="button" class="ml-auto rounded-lg bg-slate-700 px-3.5 py-2.5 text-base text-white disabled:opacity-50" data-open-compose {% if not x_account %}disabled{% endif %}>ツイート</button>
       <!-- prettier-ignore -->
-      <button type="button" class="js-logout rounded-lg p-2.5 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-6" %}</button>
+      <button type="button" data-logout class="rounded-lg p-2.5 text-slate-500" aria-label="ログアウト">{% icon "log-out" "size-6" %}</button>
     </nav>
 
     <main>
@@ -202,7 +203,8 @@
   class="m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-black/85 focus:outline-none"
 >
   <div
-    class="js-lightbox-bg flex h-full w-full items-center justify-center p-5 sm:p-11"
+    id="lightbox-bg"
+    class="flex h-full w-full items-center justify-center p-5 sm:p-11"
   >
     <img
       id="lightbox-img"
@@ -320,7 +322,7 @@
 <script src="{% static 'js/compose-images.js' %}"></script>
 <script>
   // ---- ログアウト ----
-  $(document).on("click", ".js-logout", function () {
+  $(document).on("click", "[data-logout]", function () {
     $.ajax({
       url: "{% url 'accounts:logout' %}",
       method: "POST",
@@ -330,7 +332,7 @@
   });
 
   // ---- 画像の拡大表示 (lightbox) ----
-  $(document).on("click", ".js-zoom", function () {
+  $(document).on("click", "[data-zoom]", function () {
     openLightbox(this);
   });
   $(lightbox).on("close", function () {
@@ -346,7 +348,7 @@
     stepGallery(1);
   });
   $(lightbox).on("click", function (e) {
-    if (e.target === lightbox || $(e.target).hasClass("js-lightbox-bg"))
+    if (e.target === lightbox || e.target.id === "lightbox-bg")
       lightbox.close();
   });
   $(document).on("keydown", function (e) {
@@ -356,7 +358,7 @@
   });
 
   // ---- 元のツイートのウィンドウ ----
-  $(document).on("click", ".js-parent-open", function () {
+  $(document).on("click", "[data-parent-open]", function () {
     openParentDialog(this);
   });
   $("[data-parent-close]").on("click", function () {
@@ -376,7 +378,7 @@
   });
 
   // ---- Xアカウントの切り替え・連携の削除 ----
-  $(document).on("click", ".js-x-switch, .js-x-disconnect", function () {
+  $(document).on("click", "[data-x-switch], [data-x-disconnect]", function () {
     const message = $(this).attr("data-confirm");
     if (message && !window.confirm(message)) return;
     $.ajax({
@@ -405,13 +407,13 @@
   });
 
   // ---- 入力欄の高さ自動調整・文字数カウンタ ----
-  $(document).on("input", ".js-compose-text", function () {
+  $(document).on("input", "[data-compose-text]", function () {
     autoGrow(this);
     updateCount($(this).closest(COMPOSE));
     if ($(this).attr("aria-invalid")) clearFormError($(this).closest(COMPOSE));
   });
   $(window).on("resize", function () {
-    $(".js-compose-text").each(function () {
+    $("[data-compose-text]").each(function () {
       autoGrow(this);
     });
   });
@@ -428,17 +430,17 @@
   });
 
   // ---- 投稿・返信の送信と画像選択 ----
-  $(document).on("click", ".js-compose-submit", function () {
+  $(document).on("click", "[data-compose-submit]", function () {
     submitCompose($(this).closest(COMPOSE));
   });
-  $(document).on("change", ".js-compose-file", function () {
+  $(document).on("change", "[data-compose-file]", function () {
     addComposeImages(this);
   });
 
   // ---- ツイート取得・リプライ取得の共通設定 ----
   function setupSync(syncUrl, targetSelector) {
     function runSync($btn) {
-      const $label = $btn.find(".js-sync-label");
+      const $label = $("#sync-label");
       const original = $label.text();
       clearError();
       $btn.prop("disabled", true);
@@ -462,7 +464,7 @@
         });
     }
 
-    $(".js-sync").on("click", function () {
+    $("#sync-btn").on("click", function () {
       const confirmDialog = document.querySelector($(this).data("confirm"));
       if (!confirmDialog) return;
       confirmDialog.showModal();
@@ -471,7 +473,7 @@
     $("[data-sync-confirm]").on("click", function () {
       const $dlg = $(this).closest("dialog");
       $dlg[0].close();
-      runSync($(".js-sync"));
+      runSync($("#sync-btn"));
     });
     $("#sync-confirm-dialog").on("click", function (e) {
       if (e.target === this) this.close();

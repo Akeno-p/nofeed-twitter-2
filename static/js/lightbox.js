@@ -42,14 +42,14 @@ function stepGallery(delta) {
 }
 
 function openLightbox(zoomBtn) {
-  const $gallery = $(zoomBtn).closest(".js-gallery");
+  const $gallery = $(zoomBtn).closest("[data-gallery]");
   galleryUrls = $gallery
     .find("img")
     .map(function () {
       return this.getAttribute("src");
     })
     .get();
-  galleryIndex = $gallery.find(".js-zoom").index(zoomBtn);
+  galleryIndex = $gallery.find("[data-zoom]").index(zoomBtn);
   showGalleryImage();
   lightbox.showModal();
   $("html").addClass("overflow-hidden"); // 後ろのページが一緒に動かないようにする

@@ -70,7 +70,7 @@ def post_time(value):
     if not value:
         return ""
     return format_html(
-        '<time class="js-reltime" datetime="{}" data-abs="{}">{}</time>',
+        '<time data-reltime datetime="{}" data-abs="{}">{}</time>',
         value.isoformat(),
         absolute_label(value),
         time_label(value),
