@@ -44,5 +44,8 @@ class TwoFactorRequiredMiddleware:
     @staticmethod
     def _deny(request, redirect_to):
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
-            return JsonResponse({"error": "ログインが必要です。"}, status=403)
+            return JsonResponse(
+                {"error": "ログインが必要です。", "redirect": redirect_to},
+                status=403,
+            )
         return redirect(redirect_to)

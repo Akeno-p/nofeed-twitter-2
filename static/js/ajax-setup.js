@@ -8,4 +8,9 @@ $.ajaxSetup({
       xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     }
   },
+  error: function (xhr) {
+    if (xhr.status === 403 && xhr.responseJSON && xhr.responseJSON.redirect) {
+      location.href = xhr.responseJSON.redirect;
+    }
+  },
 });
