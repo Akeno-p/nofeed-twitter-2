@@ -36,7 +36,7 @@ def _empty_login_fields(username, password):
         fields.append("password")
     return fields
 
-
+# レビューした
 @require_GET
 def login_page(request):
     """ログイン画面の表示 (GET)"""
