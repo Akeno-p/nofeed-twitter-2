@@ -13,11 +13,12 @@ def _key(scope, ident):
 
 
 def is_locked(scope, ident):
-    """同じ IPアドレス アカウント で 5回以上失敗してたら True を返す。"""
+    """対象 (IP+アカウント or 2段階認証) の 失敗回数が上限に達していれば True を返す"""
     return cache.get(_key(scope, ident), 0) >= MAX_FAILURES
 
 
 def record_failure(scope, ident):
+    """対象 (IP+アカウント or 2段階認証) の失敗回数を記録する"""
     key = _key(scope, ident)
     # add は無ければ作る。タイマーは最初の失敗から数える。
     cache.add(key, 0, LOCK_SECONDS)
