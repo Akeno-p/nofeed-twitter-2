@@ -27,15 +27,6 @@ def _go(url_name):
 LOCKED_MESSAGE = "失敗が続いたため、しばらくお待ちください"  # 1行に収まる長さにする
 
 
-def _empty_login_fields(username, password):
-    """空欄の入力欄の名前を返す。空欄かどうかは、認証の正否とは無関係な情報。"""
-    fields = []
-    if not username:
-        fields.append("username")
-    if not password:
-        fields.append("password")
-    return fields
-
 # レビューした
 @require_GET
 def login_page(request):
@@ -54,16 +45,13 @@ def login_api(request):
     username = request.POST.get("username", "").strip()
     password = request.POST.get("password", "")
 
-    empty = _empty_login_fields(username, password)
-    if empty:
-        if not username and not password:
-            message = "ユーザー名とパスワードが空欄です"
-        elif not username:
-            message = "ユーザー名が空欄です"
-        else:
-            message = "パスワードが空欄です"
-        return _fail(message, empty)
-
+    if not username and not password:
+        return _fail("ユーザー名とパスワードが空欄です", ["username","password"])
+    if not username:
+        return _fail("ユーザー名が空欄です", ["username"])
+    if not password:
+        return _fail("パスワードが空欄です", ["password"])
+    
     ident = f"{_client_ip(request)}:{username.lower()}"
     if throttle.is_locked("login", ident):
         return _fail(LOCKED_MESSAGE, [])  # ロック中は入力欄を赤くしない
