@@ -101,25 +101,6 @@
         $submit.prop("disabled", false);
       });
   });
-
-  $("#login-submit").on("click", function () {
-    const $box = $("#login-form");
-    const $submit = $(this);
-    const $inputs = $box.find("input[name]");
-    const data = {};
-    $submit.prop("disabled", true);
-    $.ajax({
-      url: "/accounts/api/login/",
-      method: "POST",
-      data: data,
-    })
-      .done(function (res) {
-        location.href = res.redirect;
-      })
-  });
-
-
-
 </script>
 <!-- prettier-ignore -->
 {% endblock %}
