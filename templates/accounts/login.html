@@ -69,6 +69,7 @@
 <!-- prettier-ignore -->
 {% block scripts %}
 <script>
+  // レビューした
   $("#login-submit").on("click", function () {
     const $box = $("#login-form");
     const $submit = $(this);
@@ -89,8 +90,8 @@
       .fail(function (xhr) {
         const body = xhr.responseJSON || {};
         $inputs.removeAttr("aria-invalid aria-describedby");
-        (body.fields || []).forEach(function (name) {
-          $inputs.filter('[name="' + name + '"]').attr({
+        (body.fields || []).forEach(function (field) {
+          $inputs.filter('[name="' + field + '"]').attr({
             "aria-invalid": "true",
             "aria-describedby": "form-error",
           });
