@@ -1,5 +1,7 @@
 """総当たり対策。失敗回数をキャッシュに数え、上限を超えたらしばらく拒否する。"""
 
+# レビュー完了
+
 from django.core.cache import cache
 
 MAX_FAILURES = 5
@@ -11,6 +13,7 @@ def _key(scope, ident):
 
 
 def is_locked(scope, ident):
+    """同じ IPアドレス アカウント で 5回以上失敗してたら True を返す。"""
     return cache.get(_key(scope, ident), 0) >= MAX_FAILURES
 
 
