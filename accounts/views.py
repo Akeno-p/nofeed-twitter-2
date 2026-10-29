@@ -10,20 +10,24 @@ from .models import TotpDevice
 from .qr import svg_data
 
 
+# レビューした
 def _client_ip(request):
     return request.META.get("REMOTE_ADDR", "")
 
 
+# レビューした
 def _fail(error, fields):
     """失敗の理由と、赤くする入力欄の名前を返す。"""
     return JsonResponse({"error": error, "fields": fields}, status=400)
 
 
+# レビューした
 def _go(url_name):
     """成功。JS が redirect の URL へ画面を移す。"""
     return JsonResponse({"redirect": reverse(url_name)})
 
 
+# レビューした
 LOCKED_MESSAGE = "失敗が続いたため、しばらくお待ちください"  # 1行に収まる長さにする
 
 
@@ -36,6 +40,7 @@ def login_page(request):
     return render(request, "accounts/login.html")
 
 
+# レビューした
 @require_POST
 def login_api(request):
     """ログイン認証処理 (POST)"""
@@ -46,12 +51,12 @@ def login_api(request):
     password = request.POST.get("password", "")
 
     if not username and not password:
-        return _fail("ユーザー名とパスワードが空欄です", ["username","password"])
+        return _fail("ユーザー名とパスワードが空欄です", ["username", "password"])
     if not username:
         return _fail("ユーザー名が空欄です", ["username"])
     if not password:
         return _fail("パスワードが空欄です", ["password"])
-    
+
     ident = f"{_client_ip(request)}:{username.lower()}"
     if throttle.is_locked("login", ident):
         return _fail(LOCKED_MESSAGE, [])  # ロック中は入力欄を赤くしない
