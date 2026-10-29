@@ -13,7 +13,11 @@
     class="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-slate-200 text-slate-700"
   >
     <!-- prettier-ignore -->
-    {% if setting_up %}{% icon "qr-code" "size-8" %}{% else %}{% icon "shield-check" "size-8" %}{% endif %}
+    {% if setting_up %}
+    {% icon "qr-code" "size-8" %}
+    {% else %}
+    {% icon "shield-check" "size-8" %}
+    {% endif %}
   </div>
 
   <!-- prettier-ignore -->
@@ -42,10 +46,7 @@
   <!-- prettier-ignore -->
   {% endif %}
 
-  <div
-    id="two-factor-form"
-    class="mt-6 space-y-5 text-left"
-  >
+  <div id="two-factor-form" class="mt-6 space-y-5 text-left">
     <div>
       <!-- prettier-ignore -->
       {% if setting_up %}
@@ -96,15 +97,11 @@
 <!-- prettier-ignore -->
 {% block scripts %}
 <script>
+  // レビューした
   $("#two-factor-submit").on("click", function () {
-    const $box = $("#two-factor-form");
-    const $submit = $(this);
-    const $inputs = $box.find("input[name]");
-    const data = {};
-    $inputs.each(function () {
-      data[this.name] = this.value;
-    });
-    $submit.prop("disabled", true);
+    const data = { code: $("#code").val() };
+    $("#two-factor-submit").prop("disabled", true);
+
     $.ajax({
       url: "{% url 'accounts:two_factor_api' %}",
       method: "POST",
@@ -115,21 +112,20 @@
       })
       .fail(function (xhr) {
         const body = xhr.responseJSON || {};
-        $inputs.removeAttr("aria-invalid aria-describedby");
-        (body.fields || []).forEach(function (name) {
-          $inputs.filter('[name="' + name + '"]').attr({
+        $("#code").removeAttr("aria-invalid aria-describedby");
+        if ((body.fields || []).includes("code")) {
+          $("#code").attr({
             "aria-invalid": "true",
             "aria-describedby": "form-error",
           });
-        });
-        $box
-          .find("#form-error")
-          .text(
-            body.error || "通信に失敗しました。もう一度お試しください。",
-          );
-        $submit.prop("disabled", false);
+        }
+        $("#form-error").text(
+          body.error || "通信に失敗しました。もう一度お試しください。",
+        );
+        $("#two-factor-submit").prop("disabled", false);
       });
   });
+
   $("#logout-btn").on("click", function () {
     $.ajax({
       url: "{% url 'accounts:logout' %}",
